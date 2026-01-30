@@ -4,5 +4,12 @@
     "timestamp": "2026-01-30 05:46 UTC",
     "url": "https://github.com/yazelin/ccat/releases/download/cats/cat_2026-01-30_0546_UTC.png",
     "model": "gemini-2.5-flash-image"
+  },
+  {
+    "number": 2,
+    "timestamp": "2026-01-30 05:56 UTC",
+    "url": "https://github.com/yazelin/ccat/releases/download/cats/cat_2026-01-30_0556_UTC.png",
+    "model": "gemini-3-pro-image-preview",
+    "status": "success"
   }
 ]

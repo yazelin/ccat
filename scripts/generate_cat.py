@@ -120,7 +120,16 @@ def update_catlist_and_push(entry: dict) -> int:
     timestamp = entry["timestamp"]
     msg = f"Add cat #{number} - {timestamp}" if status == "success" else f"Failed cat - {timestamp}"
     subprocess.run(["git", "commit", "-m", msg], check=True)
-    subprocess.run(["git", "push"], check=True)
+
+    # Retry push with rebase in case of concurrent pushes
+    for attempt in range(3):
+        result = subprocess.run(["git", "push"], capture_output=True, text=True)
+        if result.returncode == 0:
+            break
+        print(f"Push failed (attempt {attempt + 1}), rebasing...")
+        subprocess.run(["git", "pull", "--rebase"], check=True)
+    else:
+        raise RuntimeError("Failed to push after 3 attempts")
     return number or 0
 
 

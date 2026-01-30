@@ -33,8 +33,12 @@ async def generate_cat_image(output_dir: str, timestamp: str) -> dict:
     response = await generator.generate_text_to_image(request)
 
     if not response.success:
-        print(f"Error: {response.message} - {response.error}", file=sys.stderr)
-        sys.exit(1)
+        return {
+            "file_path": None,
+            "model_used": None,
+            "status": "failed",
+            "error": f"{response.message} - {response.error}",
+        }
 
     model_info = response.model_used or "unknown"
     if response.used_fallback:
@@ -43,6 +47,7 @@ async def generate_cat_image(output_dir: str, timestamp: str) -> dict:
     return {
         "file_path": response.generated_files[0],
         "model_used": model_info,
+        "status": "success",
     }
 
 
@@ -96,17 +101,11 @@ def post_issue_comment(image_url: str, number: int, timestamp: str, model_used: 
     )
 
 
-def update_catlist_and_push(timestamp: str, url: str, model_used: str) -> int:
+def update_catlist_and_push(entry: dict) -> int:
     """Update catlist.json, commit and push (only JSON, no images)."""
     catlist_path = Path("catlist.json")
     cats = json.loads(catlist_path.read_text()) if catlist_path.exists() else []
-    number = len(cats) + 1
-    cats.append({
-        "number": number,
-        "timestamp": timestamp,
-        "url": url,
-        "model": model_used,
-    })
+    cats.append(entry)
     catlist_path.write_text(json.dumps(cats, indent=2, ensure_ascii=False) + "\n")
 
     subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
@@ -115,12 +114,14 @@ def update_catlist_and_push(timestamp: str, url: str, model_used: str) -> int:
         check=True,
     )
     subprocess.run(["git", "add", "catlist.json"], check=True)
-    subprocess.run(
-        ["git", "commit", "-m", f"Add cat #{number} - {timestamp}"],
-        check=True,
-    )
+
+    status = entry["status"]
+    number = entry.get("number")
+    timestamp = entry["timestamp"]
+    msg = f"Add cat #{number} - {timestamp}" if status == "success" else f"Failed cat - {timestamp}"
+    subprocess.run(["git", "commit", "-m", msg], check=True)
     subprocess.run(["git", "push"], check=True)
-    return number
+    return number or 0
 
 
 def main():
@@ -129,6 +130,24 @@ def main():
 
     print(f"Generating cat for {timestamp}...")
     result = asyncio.run(generate_cat_image("/tmp", timestamp))
+
+    # Read current count for numbering
+    catlist_path = Path("catlist.json")
+    cats = json.loads(catlist_path.read_text()) if catlist_path.exists() else []
+    next_number = len(cats) + 1
+
+    if result["status"] == "failed":
+        print(f"Generation failed: {result['error']}", file=sys.stderr)
+        entry = {
+            "number": None,
+            "timestamp": timestamp,
+            "url": None,
+            "model": "all failed",
+            "status": "failed",
+            "error": result["error"],
+        }
+        update_catlist_and_push(entry)
+        sys.exit(1)
 
     image_path = result["file_path"]
     model_used = result["model_used"]
@@ -141,13 +160,20 @@ def main():
     image_url = upload_image_as_release_asset(image_path)
     print(f"Image URL: {image_url}")
 
+    entry = {
+        "number": next_number,
+        "timestamp": timestamp,
+        "url": image_url,
+        "model": model_used,
+        "status": "success",
+    }
     print("Updating catlist.json...")
-    number = update_catlist_and_push(timestamp, image_url, model_used)
+    update_catlist_and_push(entry)
 
     print("Posting issue comment...")
-    post_issue_comment(image_url, number, timestamp, model_used)
+    post_issue_comment(image_url, next_number, timestamp, model_used)
 
-    print(f"Done! Cat #{number}")
+    print(f"Done! Cat #{next_number}")
 
 
 if __name__ == "__main__":

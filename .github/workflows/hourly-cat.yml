@@ -27,4 +27,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CAT_ISSUE_NUMBER: '1'
+          NANOBANANA_MODEL: gemini-3-pro-image-preview
+          NANOBANANA_TIMEOUT: '180'
+          NANOBANANA_FALLBACK_MODELS: gemini-3-pro-image-preview,gemini-2.5-flash-image
         run: python scripts/generate_cat.py

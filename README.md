@@ -15,6 +15,8 @@ uvx catime yesterday    # List yesterday's cats
 uvx catime 2026-01-30   # List all cats from a date
 uvx catime 2026-01-30T05  # View the cat from a specific hour
 uvx catime --list       # List all cats
+uvx catime view         # Open cat gallery in browser (localhost:8000)
+uvx catime view --port 3000  # Use custom port
 ```
 
 ## How It Works
@@ -23,6 +25,7 @@ uvx catime --list       # List all cats
 - **Image hosting:** GitHub Release assets
 - **Cat gallery:** Monthly GitHub issues (auto-created)
 - **Metadata:** `catlist.json` in the repo (records timestamp, model used, success/failure)
+- **Gallery:** [GitHub Pages](https://yazelin.github.io/catime) waterfall gallery (`docs/`)
 - **Schedule:** GitHub Actions cron, every hour at :00
 
 ## Setup (for your own repo)

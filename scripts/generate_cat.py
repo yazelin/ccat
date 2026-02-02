@@ -47,6 +47,7 @@ def generate_prompt(timestamp: str) -> str:
     else:
         recent_section = ""
 
+    print(f"Generating prompt with {len(recent)} recent prompts as context...")
     try:
         from google import genai
 

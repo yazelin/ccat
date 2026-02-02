@@ -31,6 +31,10 @@
   const ddDays = document.getElementById("dd-days");
   const ddClear = document.getElementById("dd-clear");
 
+  const SVG_CALENDAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+  const SVG_CLIPBOARD = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  const SVG_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
   let calYear = new Date().getFullYear();
   let calMonth = new Date().getMonth();
   let catDates = new Set();
@@ -97,7 +101,7 @@
   ddNext.addEventListener("click", () => { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); });
   ddClear.addEventListener("click", () => {
     selectedDate = "";
-    datePickerBtn.textContent = "\u{1f4c5} All Dates";
+    datePickerBtn.innerHTML = SVG_CALENDAR + " All Dates";
     datePickerBtn.classList.remove("active");
     dateDropdown.classList.add("hidden");
     applyFilter();
@@ -129,7 +133,7 @@
     const date = e.target.dataset.date;
     if (!date) return;
     selectedDate = date;
-    datePickerBtn.textContent = "\u{1f4c5} " + date;
+    datePickerBtn.innerHTML = SVG_CALENDAR + " " + date;
     datePickerBtn.classList.add("active");
     dateDropdown.classList.add("hidden");
     applyFilter();
@@ -220,7 +224,7 @@
     if (cat.prompt) {
       lbPromptText.textContent = cat.prompt;
       lbPrompt.classList.remove("hidden");
-      lbCopyBtn.textContent = "\u{1f4cb} Copy";
+      lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy";
     } else {
       lbPrompt.classList.add("hidden");
     }
@@ -228,8 +232,8 @@
   }
   lbCopyBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(lbPromptText.textContent).then(() => {
-      lbCopyBtn.textContent = "\u2705 Copied!";
-      setTimeout(() => { lbCopyBtn.textContent = "\u{1f4cb} Copy"; }, 1500);
+      lbCopyBtn.innerHTML = SVG_CHECK + " Copied!";
+      setTimeout(() => { lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy"; }, 1500);
     });
   });
   lbClose.addEventListener("click", () => lightbox.classList.add("hidden"));

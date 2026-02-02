@@ -71,6 +71,9 @@ body {
   box-shadow: 0 0 0 3px rgba(255,107,157,.2);
 }
 
+/* Inline SVG icon alignment */
+button svg, .date-picker-btn svg { vertical-align: -0.15em; }
+
 /* Custom date picker */
 .date-picker { position: relative; }
 .date-picker-btn {

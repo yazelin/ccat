@@ -37,11 +37,12 @@ body {
 /* Top bar */
 #topbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; align-items: center; gap: 1rem;
-  padding: .6rem 1.2rem;
+  display: flex; align-items: center; gap: .6rem;
+  padding: .6rem 1rem;
   background: linear-gradient(135deg, #fff 0%, var(--pink-pale) 100%);
   border-bottom: 3px solid var(--pink-light);
   box-shadow: 0 2px 16px var(--shadow);
+  flex-wrap: wrap;
 }
 #topbar h1 {
   font-size: 1.3rem; font-weight: 800; white-space: nowrap;
@@ -50,25 +51,103 @@ body {
   background-clip: text;
 }
 #topbar h1::before { content: "🐱 "; -webkit-text-fill-color: initial; }
-.filters { display: flex; gap: .5rem; flex: 1; justify-content: flex-end; }
-.filters select, .filters input[type="date"] {
+.filters {
+  display: flex; gap: .5rem; flex: 1; justify-content: flex-end;
+  align-items: center; flex-wrap: wrap; min-width: 0;
+}
+.filters select {
   padding: .45rem .8rem; border-radius: 20px;
   border: 2px solid var(--pink-light);
   background: #fff; color: var(--text); font-size: .85rem;
   font-family: inherit; cursor: pointer;
   transition: border-color .2s, box-shadow .2s;
+  min-width: 0;
 }
-.filters select:focus, .filters input[type="date"]:focus {
+.filters select:focus {
   outline: none; border-color: var(--pink);
   box-shadow: 0 0 0 3px rgba(255,107,157,.2);
 }
-.clear-btn {
-  background: var(--pink-light); color: #fff; border: none;
-  border-radius: 50%; width: 28px; height: 28px; font-size: 1rem;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
+
+/* Custom date picker */
+.date-picker { position: relative; }
+.date-picker-btn {
+  padding: .45rem .8rem; border-radius: 20px;
+  border: 2px solid var(--pink-light);
+  background: #fff; color: var(--text); font-size: .85rem;
+  font-family: inherit; cursor: pointer; white-space: nowrap;
+  transition: border-color .2s, box-shadow .2s;
+}
+.date-picker-btn:hover { border-color: var(--pink); }
+.date-picker-btn.active {
+  border-color: var(--pink); background: var(--pink-pale);
+}
+.date-dropdown {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 150;
+  background: #fff; border-radius: 16px; padding: .8rem;
+  border: 2px solid var(--pink-light);
+  box-shadow: 0 8px 30px var(--shadow);
+  width: 260px;
+}
+.dd-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .5rem;
+}
+.dd-header span {
+  font-weight: 800; font-size: .9rem;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.dd-nav {
+  width: 30px; height: 30px; border-radius: 50%; border: none;
+  background: var(--pink-pale); color: var(--pink);
+  font-size: 1.1rem; font-weight: 800; cursor: pointer;
   transition: background .2s;
 }
-.clear-btn:hover { background: var(--pink); }
+.dd-nav:hover { background: var(--pink-light); color: #fff; }
+.dd-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  text-align: center; font-size: .7rem; font-weight: 700;
+  color: var(--text-muted); margin-bottom: .3rem;
+}
+.dd-days {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.dd-days button {
+  aspect-ratio: 1; border: none; border-radius: 50%;
+  background: transparent; color: var(--text); font-size: .78rem;
+  font-family: inherit; font-weight: 600; cursor: pointer;
+  transition: all .15s;
+}
+.dd-days button:hover { background: var(--pink-pale); }
+.dd-days button.today { border: 2px solid var(--pink-light); }
+.dd-days button.selected {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: #fff;
+}
+.dd-days button.has-cat::after {
+  content: ""; display: block; width: 4px; height: 4px;
+  background: var(--pink); border-radius: 50%;
+  margin: -2px auto 0;
+}
+.dd-days button.selected.has-cat::after { background: #fff; }
+.dd-days button.other-month { color: var(--text-muted); opacity: .4; }
+.dd-clear {
+  display: block; width: 100%; margin-top: .5rem; padding: .4rem;
+  border: none; border-radius: 20px;
+  background: var(--pink-pale); color: var(--pink);
+  font-family: inherit; font-size: .8rem; font-weight: 700;
+  cursor: pointer; transition: background .2s;
+}
+.dd-clear:hover { background: var(--pink-light); color: #fff; }
+
+/* GitHub link */
+.github-link {
+  color: var(--pink); flex-shrink: 0;
+  transition: color .2s, transform .2s;
+  display: flex; align-items: center;
+}
+.github-link:hover { color: var(--purple); transform: scale(1.15) rotate(-8deg); }
 
 /* Timeline sidebar */
 #timeline {
@@ -157,12 +236,13 @@ body {
 }
 .month-sep::before { content: "🌸 "; -webkit-text-fill-color: initial; }
 
-/* End message */
+/* End / scroll sentinel */
 #end-msg {
   text-align: center; padding: 2.5rem; font-size: 1rem;
   color: var(--text-muted); font-weight: 700;
   margin-right: 130px;
 }
+#end-msg.loading { visibility: hidden; height: 1px; padding: 0; }
 .hidden { display: none !important; }
 
 /* Lightbox */
@@ -199,6 +279,12 @@ body {
   #timeline-toggle { display: block; }
 }
 @media (max-width: 600px) {
-  .masonry { column-count: 1; padding: .8rem; }
+  .masonry { column-count: 1; padding: .8rem; margin-top: 100px; }
+  #topbar { gap: .4rem; padding: .5rem .6rem; }
   #topbar h1 { font-size: 1.1rem; }
+  .filters { flex: 1 1 100%; order: 1; justify-content: flex-start; gap: .4rem; }
+  .filters select { font-size: .78rem; padding: .35rem .5rem; }
+  .date-picker-btn { font-size: .78rem; padding: .35rem .5rem; }
+  .date-dropdown { width: 240px; right: -40px; }
+  .github-link { margin-left: auto; }
 }

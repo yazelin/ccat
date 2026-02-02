@@ -460,5 +460,12 @@
     "model": "all failed",
     "status": "failed",
     "error": "Failed to generate any images - All models failed. Last error: No image data in response"
+  },
+  {
+    "number": 67,
+    "timestamp": "2026-02-02 08:35 UTC",
+    "url": "https://github.com/yazelin/catime/releases/download/cats/cat_2026-02-02_0835_UTC.png",
+    "model": "gemini-2.5-flash-image (fallback from gemini-3-pro-image-preview, reason: API 503: The model is overloaded. Please try again later.)",
+    "status": "success"
   }
 ]

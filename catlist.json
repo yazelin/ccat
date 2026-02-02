@@ -445,5 +445,12 @@
     "url": "https://github.com/yazelin/catime/releases/download/cats/cat_2026-02-02_0500_UTC.png",
     "model": "gemini-3-pro-image-preview",
     "status": "success"
+  },
+  {
+    "number": 65,
+    "timestamp": "2026-02-02 06:55 UTC",
+    "url": "https://github.com/yazelin/catime/releases/download/cats/cat_2026-02-02_0655_UTC.png",
+    "model": "gemini-2.5-flash-image (fallback from gemini-3-pro-image-preview, reason: API 503: The model is overloaded. Please try again later.)",
+    "status": "success"
   }
 ]

@@ -18,6 +18,9 @@
   const lbImg = document.getElementById("lb-img");
   const lbInfo = document.getElementById("lb-info");
   const lbClose = document.getElementById("lb-close");
+  const lbPrompt = document.getElementById("lb-prompt");
+  const lbPromptText = document.getElementById("lb-prompt-text");
+  const lbCopyBtn = document.getElementById("lb-copy-btn");
 
   // Date picker elements
   const datePickerBtn = document.getElementById("date-picker-btn");
@@ -214,8 +217,21 @@
   function openLightbox(cat) {
     lbImg.src = cat.url;
     lbInfo.textContent = `#${cat.number} \u00b7 ${cat.timestamp} \u00b7 ${cat.model || ""}`;
+    if (cat.prompt) {
+      lbPromptText.textContent = cat.prompt;
+      lbPrompt.classList.remove("hidden");
+      lbCopyBtn.textContent = "\u{1f4cb} Copy";
+    } else {
+      lbPrompt.classList.add("hidden");
+    }
     lightbox.classList.remove("hidden");
   }
+  lbCopyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(lbPromptText.textContent).then(() => {
+      lbCopyBtn.textContent = "\u2705 Copied!";
+      setTimeout(() => { lbCopyBtn.textContent = "\u{1f4cb} Copy"; }, 1500);
+    });
+  });
   lbClose.addEventListener("click", () => lightbox.classList.add("hidden"));
   lightbox.addEventListener("click", e => { if (e.target === lightbox) lightbox.classList.add("hidden"); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") lightbox.classList.add("hidden"); });

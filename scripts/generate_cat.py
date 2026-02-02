@@ -8,11 +8,40 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+PROMPT_META = (
+    "You are a professional prompt engineer for AI image generation. "
+    "Create a single, detailed English prompt for generating a stunning image. "
+    "Requirements: (1) A cat must be the subject or prominently featured "
+    "(2) The date and time '{timestamp}' must be visually displayed in the image. "
+    "Beyond these two requirements, you have complete creative freedom — surprise me with "
+    "varied styles (photography, painting, illustration, etc.), unique scenes, interesting "
+    "compositions, lighting, and moods. Output ONLY the prompt text, nothing else."
+)
+
 REPO = os.environ.get("GITHUB_REPOSITORY", "yazelin/catime")
 RELEASE_TAG = "cats"
 
 
-async def generate_cat_image(output_dir: str, timestamp: str) -> dict:
+def generate_prompt(timestamp: str) -> str:
+    """Use Gemini text model to generate a creative image prompt."""
+    try:
+        from google import genai
+
+        client = genai.Client()
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=PROMPT_META.format(timestamp=timestamp),
+        )
+        prompt = response.text.strip()
+        if prompt:
+            print(f"AI-generated prompt: {prompt[:120]}...")
+            return prompt
+    except Exception as e:
+        print(f"Prompt generation failed ({e}), using fallback.")
+    return f"A cute cat with the date and time '{timestamp}' displayed in the image, high quality, detailed"
+
+
+async def generate_cat_image(output_dir: str, timestamp: str, prompt: str) -> dict:
     """Use nanobanana-py's ImageGenerator to generate a cat image."""
     from nanobanana_py.image_generator import ImageGenerator
     from nanobanana_py.types import ImageGenerationRequest
@@ -20,7 +49,7 @@ async def generate_cat_image(output_dir: str, timestamp: str) -> dict:
     generator = ImageGenerator()
 
     request = ImageGenerationRequest(
-        prompt=f"畫一隻可愛的貓，並在圖片中顯示現在的日期與時間: {timestamp}",
+        prompt=prompt,
         filename=f"cat_{timestamp.replace(' ', '_').replace(':', '')}",
         resolution="1K",
         file_format="png",
@@ -181,7 +210,8 @@ def main():
         return
 
     print(f"Generating cat for {timestamp}...")
-    result = asyncio.run(generate_cat_image("/tmp", timestamp))
+    prompt = generate_prompt(timestamp)
+    result = asyncio.run(generate_cat_image("/tmp", timestamp, prompt))
 
     # Read current count for numbering
     catlist_path = Path("catlist.json")
@@ -215,6 +245,7 @@ def main():
     entry = {
         "number": next_number,
         "timestamp": timestamp,
+        "prompt": prompt,
         "url": image_url,
         "model": model_used,
         "status": "success",

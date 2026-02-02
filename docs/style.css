@@ -273,6 +273,24 @@ body {
   font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,.3);
 }
 
+/* Lightbox prompt */
+#lb-prompt {
+  margin-top: .8rem; max-width: 600px; width: 90vw;
+  background: rgba(0, 0, 0, .5); border-radius: 12px;
+  padding: .7rem 1rem; display: flex; align-items: flex-start; gap: .6rem;
+}
+#lb-prompt-text {
+  color: #fff; font-size: .82rem; line-height: 1.5;
+  word-break: break-word; flex: 1;
+}
+#lb-copy-btn {
+  flex-shrink: 0; padding: .3rem .7rem; border: none; border-radius: 8px;
+  background: rgba(255, 255, 255, .15); color: #fff;
+  font-family: inherit; font-size: .78rem; font-weight: 700;
+  cursor: pointer; transition: background .2s; white-space: nowrap;
+}
+#lb-copy-btn:hover { background: rgba(255, 255, 255, .3); }
+
 /* Responsive */
 @media (max-width: 1024px) {
   .masonry { column-count: 2; margin-right: 0; }

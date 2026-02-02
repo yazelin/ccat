@@ -16,3 +16,6 @@ catime = "catime.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/catime"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"docs" = "catime/docs"

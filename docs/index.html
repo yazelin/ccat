@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catime - AI Cat Gallery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header id="topbar">
+    <h1>Catime</h1>
+    <div class="filters">
+      <select id="model-filter">
+        <option value="">All Models</option>
+      </select>
+      <input type="date" id="date-filter" title="Filter by date">
+      <button id="date-clear" class="clear-btn" title="Clear date filter">&times;</button>
+    </div>
+  </header>
+
+  <nav id="timeline" aria-label="Timeline navigation">
+    <button id="timeline-toggle" aria-label="Toggle timeline">&#x1f4c5;</button>
+    <div id="timeline-list"></div>
+  </nav>
+
+  <main id="gallery" class="masonry"></main>
+  <div id="end-msg" class="hidden">No more cats! 🐱</div>
+
+  <div id="lightbox" class="hidden" role="dialog">
+    <button id="lb-close" aria-label="Close">&times;</button>
+    <img id="lb-img" src="" alt="Cat">
+    <div id="lb-info"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

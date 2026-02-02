@@ -64,14 +64,48 @@ def filter_by_query(cats: list[dict], query: str) -> list[dict]:
     return []
 
 
+def cmd_view(args):
+    """Serve the cat gallery locally in a browser."""
+    import http.server
+    import functools
+    import threading
+    import webbrowser
+
+    docs_dir = Path(__file__).resolve().parent / "docs"
+    if not docs_dir.exists():
+        # Fallback: project root docs/
+        docs_dir = Path(__file__).resolve().parent.parent.parent / "docs"
+    if not docs_dir.exists():
+        print("Error: docs/ directory not found.", file=sys.stderr)
+        sys.exit(1)
+
+    port = args.port
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(docs_dir))
+    server = http.server.HTTPServer(("127.0.0.1", port), handler)
+    url = f"http://127.0.0.1:{port}"
+    print(f"Serving cat gallery at {url}")
+    threading.Timer(0.5, lambda: webbrowser.open(url)).start()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nStopped.")
+
+
 def main():
+    # Handle 'view' subcommand separately to avoid argparse conflicts
+    if len(sys.argv) >= 2 and sys.argv[1] == "view":
+        view_parser = argparse.ArgumentParser(prog="catime view")
+        view_parser.add_argument("--port", type=int, default=8000, help="Port (default: 8000)")
+        cmd_view(view_parser.parse_args(sys.argv[2:]))
+        return
+
     parser = argparse.ArgumentParser(
         prog="catime",
         description="View AI-generated hourly cat images",
     )
     parser.add_argument(
         "query", nargs="?",
-        help="Cat number (e.g. 42), date (2026-01-30), date+hour (2026-01-30T05), 'today', or 'yesterday'.",
+        help="Cat number (e.g. 42), date (2026-01-30), date+hour (2026-01-30T05), 'today', 'yesterday', or 'view'.",
     )
     parser.add_argument("--repo", default=DEFAULT_REPO, help="GitHub repo owner/name")
     parser.add_argument("--local", action="store_true", help="Use local catlist.json")
@@ -105,6 +139,7 @@ def main():
         print("  catime 2026-01-30T05   View the cat from a specific hour")
         print("  catime latest          View the latest cat")
         print("  catime --list          List all cats")
+        print("  catime view            Open cat gallery in browser")
         return
 
     # latest

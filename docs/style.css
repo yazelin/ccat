@@ -285,6 +285,6 @@ body {
   .filters { flex: 1 1 100%; order: 1; justify-content: flex-start; gap: .4rem; }
   .filters select { font-size: .78rem; padding: .35rem .5rem; }
   .date-picker-btn { font-size: .78rem; padding: .35rem .5rem; }
-  .date-dropdown { width: 240px; right: -40px; }
+  .date-dropdown { width: calc(100vw - 1.2rem); max-width: 280px; right: auto; left: 0; }
   .github-link { margin-left: auto; }
 }

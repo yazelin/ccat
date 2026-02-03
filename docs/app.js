@@ -21,6 +21,8 @@
   const lbPrompt = document.getElementById("lb-prompt");
   const lbPromptText = document.getElementById("lb-prompt-text");
   const lbCopyBtn = document.getElementById("lb-copy-btn");
+  const lbStory = document.getElementById("lb-story");
+  const lbStoryText = document.getElementById("lb-story-text");
 
   // Date picker elements
   const datePickerBtn = document.getElementById("date-picker-btn");
@@ -227,6 +229,13 @@
       lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy";
     } else {
       lbPrompt.classList.add("hidden");
+    }
+    // Handle story (backwards compatible)
+    if (cat.story) {
+      lbStoryText.textContent = cat.story;
+      lbStory.classList.remove("hidden");
+    } else {
+      lbStory.classList.add("hidden");
     }
     lightbox.classList.remove("hidden");
   }

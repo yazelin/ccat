@@ -300,6 +300,27 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
 }
 #lb-copy-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(255, 107, 157, .5); }
 
+/* Lightbox story */
+#lb-story {
+  margin-top: .6rem;
+  max-width: 600px;
+  width: 90vw;
+  background: linear-gradient(135deg, rgba(201, 177, 255, .4), rgba(255, 107, 157, .3));
+  border-radius: 12px;
+  padding: .8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, .2);
+}
+#lb-story-text {
+  color: #fff;
+  font-size: .9rem;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
+}
+#lb-story::before {
+  content: "📖 ";
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .masonry { column-count: 2; margin-right: 0; }

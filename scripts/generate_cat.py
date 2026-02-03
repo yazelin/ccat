@@ -9,45 +9,89 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 PROMPT_META = (
-    "You are a professional prompt engineer for AI image generation. "
-    "Create a single, detailed English prompt for generating a stunning image. "
-    "Requirements: (1) A cat must be the subject or prominently featured "
-    "(2) The date and time '{timestamp}' must be visually displayed in the image. "
-    "Beyond these two requirements, you have complete creative freedom — surprise me with "
-    "varied styles (photography, painting, illustration, etc.), unique scenes, interesting "
-    "compositions, lighting, and moods. Do NOT include any resolution keywords "
-    "(like 4K, 8K, 16K, etc.) in the prompt.\n\n"
+    "You are a creative storyteller AND prompt engineer for AI image generation. "
+    "Your task is to create both a story and an image prompt that match each other.\n\n"
+    "Requirements:\n"
+    "(1) A cat must be the subject or prominently featured in the image\n"
+    "(2) The date and time '{timestamp}' must be visually displayed in the image\n"
+    "(3) The image content MUST match the story - if the story describes a scene, the image should show that scene\n"
+    "(4) Use varied styles (photography, painting, illustration, etc.), unique scenes, interesting compositions\n"
+    "(5) Do NOT include any resolution keywords (like 4K, 8K, 16K, etc.) in the prompt\n"
+    "(6) If previous stories are provided, your new story should SUBTLY CONTINUE or EXTEND the narrative - "
+    "perhaps the cat goes somewhere new, meets someone, or the next moment in their journey. "
+    "However, the cat's appearance and art style MUST be different from previous images.\n\n"
     "{recent_section}"
-    "Output ONLY the prompt text, nothing else."
+    "Output a JSON object with exactly this format:\n"
+    '{{"prompt": "English image prompt here", "story": "繁體中文短故事，2-3句"}}\n\n'
+    "The story should be in Traditional Chinese, 2-3 sentences, describing what the cat is doing in the scene. "
+    "The image prompt should create a visual that matches the story content."
 )
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "yazelin/catime")
 RELEASE_TAG = "cats"
 
 
-def get_recent_prompts(n: int = 5) -> list[str]:
-    """Return the last n prompts from catlist.json."""
+def get_recent_context(n: int = 10) -> dict:
+    """Return the last n prompts and stories from catlist.json."""
     catlist_path = Path("catlist.json")
     if not catlist_path.exists():
-        return []
+        return {'prompts': [], 'stories': []}
     cats = json.loads(catlist_path.read_text())
-    return [c["prompt"] for c in cats if c.get("prompt")][-n:]
+    valid_cats = [c for c in cats if c.get("prompt")][-n:]
+    return {
+        'prompts': [c["prompt"] for c in valid_cats],
+        'stories': [c.get("story", "") for c in valid_cats if c.get("story")]
+    }
 
 
-def generate_prompt(timestamp: str) -> str:
-    """Use Gemini text model to generate a creative image prompt."""
-    recent = get_recent_prompts(5)
-    if recent:
-        bullets = "\n".join(f"- {p}" for p in recent)
+def parse_ai_response(text: str) -> dict:
+    """Parse AI response that may contain JSON with prompt and story."""
+    import re
+    text = text.strip()
+
+    # Try to extract JSON from markdown code block
+    code_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+    if code_block_match:
+        text = code_block_match.group(1)
+
+    # Try to parse as JSON
+    try:
+        data = json.loads(text)
+        if isinstance(data, dict) and "prompt" in data:
+            return {
+                'prompt': data.get("prompt", ""),
+                'story': data.get("story", "")
+            }
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: treat entire text as prompt
+    return {'prompt': text, 'story': ''}
+
+
+def generate_prompt_and_story(timestamp: str) -> dict:
+    """Use Gemini text model to generate a creative image prompt and story."""
+    context = get_recent_context(10)
+    recent_prompts = context['prompts']
+    recent_stories = context['stories']
+
+    recent_section = ""
+    if recent_prompts:
+        bullets = "\n".join(f"- {p}" for p in recent_prompts)
         recent_section = (
             "IMPORTANT: Here are the most recent prompts used. "
             "Avoid similar themes, styles, settings, and compositions:\n"
             f"{bullets}\n\n"
         )
-    else:
-        recent_section = ""
+    if recent_stories:
+        story_bullets = "\n".join(f"- {s}" for s in recent_stories[-5:])
+        recent_section += (
+            "Here are recent stories. You may subtly extend the narrative thread, "
+            "but the cat's appearance and art style should be different:\n"
+            f"{story_bullets}\n\n"
+        )
 
-    print(f"Generating prompt with {len(recent)} recent prompts as context...")
+    print(f"Generating prompt with {len(recent_prompts)} recent prompts and {len(recent_stories)} stories as context...")
     try:
         from google import genai
 
@@ -56,13 +100,19 @@ def generate_prompt(timestamp: str) -> str:
             model="gemini-2.5-flash",
             contents=PROMPT_META.format(timestamp=timestamp, recent_section=recent_section),
         )
-        prompt = response.text.strip()
-        if prompt:
-            print(f"AI-generated prompt: {prompt[:120]}...")
-            return prompt
+        result = parse_ai_response(response.text)
+        if result['prompt']:
+            print(f"AI-generated prompt: {result['prompt'][:120]}...")
+            if result['story']:
+                print(f"AI-generated story: {result['story'][:80]}...")
+            return result
     except Exception as e:
         print(f"Prompt generation failed ({e}), using fallback.")
-    return f"A cute cat with the date and time '{timestamp}' displayed in the image, high quality, detailed"
+
+    return {
+        'prompt': f"A cute cat with the date and time '{timestamp}' displayed in the image, high quality, detailed",
+        'story': "一隻可愛的貓咪正在享受美好的一天。"
+    }
 
 
 async def generate_cat_image(output_dir: str, timestamp: str, prompt: str) -> dict:
@@ -165,14 +215,16 @@ def get_or_create_monthly_issue(now: datetime) -> str:
     return url.split("/")[-1]
 
 
-def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp: str, model_used: str, prompt: str = ""):
+def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp: str, model_used: str, prompt: str = "", story: str = ""):
     """Post a comment on the monthly issue with the cat image."""
     prompt_line = f"**Prompt:** {prompt}\n" if prompt else ""
+    story_line = f"**Story:** {story}\n" if story else ""
     body = (
         f"## Cat #{number}\n"
         f"**Time:** {timestamp}\n"
         f"**Model:** `{model_used}`\n"
-        f"{prompt_line}\n"
+        f"{prompt_line}"
+        f"{story_line}\n"
         f"![cat-{number}]({image_url})"
     )
     subprocess.run(
@@ -236,7 +288,9 @@ def main():
         return
 
     print(f"Generating cat for {timestamp}...")
-    prompt = generate_prompt(timestamp)
+    prompt_data = generate_prompt_and_story(timestamp)
+    prompt = prompt_data['prompt']
+    story = prompt_data['story']
     result = asyncio.run(generate_cat_image("/tmp", timestamp, prompt))
 
     # Read current count for numbering
@@ -272,6 +326,7 @@ def main():
         "number": next_number,
         "timestamp": timestamp,
         "prompt": prompt,
+        "story": story,
         "url": image_url,
         "model": model_used,
         "status": "success",
@@ -282,7 +337,7 @@ def main():
     print("Posting issue comment...")
     issue_number = get_or_create_monthly_issue(now)
     print(f"Using monthly issue #{issue_number}")
-    post_issue_comment(issue_number, image_url, next_number, timestamp, model_used, prompt)
+    post_issue_comment(issue_number, image_url, next_number, timestamp, model_used, prompt, story)
 
     print(f"Done! Cat #{next_number}")
 

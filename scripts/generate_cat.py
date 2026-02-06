@@ -21,8 +21,20 @@ SUMMARY_PROMPT = (
     "- Focus on specific repeated combos, not generic concepts"
 )
 
+NEWS_PROMPT = (
+    "Search for today's interesting world news and current events.\n\n"
+    "Pick 3-5 news items that are:\n"
+    "- Fun, heartwarming, quirky, cultural, scientific, sports, weather, travel, tourism, or lifestyle related\n"
+    "- From DIFFERENT regions of the world\n"
+    "- AVOID: war, terrorism, political controversy, violent crime, natural disasters with casualties\n\n"
+    "For each item, write a 1-sentence summary in English. MUST include the city/country where it happened.\n\n"
+    "Output a JSON object with exactly this format:\n"
+    '{{"news": ["summary 1", "summary 2", ...]}}'
+)
+
 IDEA_PROMPT = (
     "You are a wildly creative storyteller and visual director inventing a unique scene for an AI cat image.\n\n"
+    "{news_section}"
     "{avoid_section}"
     "Requirements:\n"
     "(1) A cat must be the subject or prominently featured\n"
@@ -191,13 +203,44 @@ def maybe_update_creative_notes(cat_number: int) -> dict:
     return notes
 
 
-def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
-    """Two-stage prompt generation: idea -> render.
+def fetch_news_inspiration() -> list[str]:
+    """Use Gemini with Google Search grounding to fetch today's interesting news.
 
-    Stage 1: IDEA_PROMPT + avoid_list -> {"idea": ..., "story": ...}
+    Returns a list of short news summaries, or empty list on failure.
+    """
+    print("Stage 0: Fetching today's news for inspiration...")
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client()
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=NEWS_PROMPT,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())]
+            ),
+        )
+        result = parse_ai_response_generic(response.text, ["news"])
+        if result and isinstance(result["news"], list):
+            news = result["news"][:5]
+            for i, item in enumerate(news, 1):
+                print(f"  News {i}: {item[:80]}...")
+            return news
+        print("  News parse failed, skipping news inspiration.")
+    except Exception as e:
+        print(f"  News fetch failed ({e}), skipping news inspiration.")
+    return []
+
+
+def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
+    """Three-stage prompt generation: news -> idea -> render.
+
+    Stage 0: NEWS_PROMPT + Google Search -> [news summaries] (optional inspiration)
+    Stage 1: IDEA_PROMPT + avoid_list + news -> {"idea": ..., "story": ...}
     Stage 2: RENDER_PROMPT + idea + story + timestamp -> {"prompt": ...}
 
-    Returns: {'prompt': str, 'story': str, 'idea': str, 'avoid_list': list}
+    Returns: {'prompt': str, 'story': str, 'idea': str, 'avoid_list': list, 'news_inspiration': list}
     """
     avoid_list = creative_notes.get("avoid_list", [])
     avoid_section = ""
@@ -208,15 +251,28 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
             f"{bullets}\n\n"
         )
 
+    # Stage 0: Fetch news inspiration
+    news = fetch_news_inspiration()
+    news_section = ""
+    if news:
+        bullets = "\n".join(f"- {item}" for item in news)
+        news_section = (
+            "Here are some current world events for inspiration. "
+            "You MAY creatively incorporate one into the cat scene, or ignore them entirely. "
+            "Aim for roughly half news-inspired, half pure imagination.\n"
+            f"{bullets}\n\n"
+        )
+
     fallback = {
         'prompt': f"A cute cat with the date and time '{timestamp}' displayed in the image, high quality, detailed",
         'story': "一隻可愛的貓咪正在享受美好的一天。",
         'idea': '',
         'avoid_list': avoid_list,
+        'news_inspiration': news,
     }
 
     # Stage 1: Generate idea and story
-    print(f"Stage 1: Generating idea (avoid_list has {len(avoid_list)} items)...")
+    print(f"Stage 1: Generating idea (avoid_list has {len(avoid_list)} items, news has {len(news)} items)...")
     idea = ""
     story = ""
     try:
@@ -225,7 +281,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
         client = genai.Client()
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=IDEA_PROMPT.format(avoid_section=avoid_section),
+            contents=IDEA_PROMPT.format(news_section=news_section, avoid_section=avoid_section),
         )
         result = parse_ai_response_generic(response.text, ["idea", "story"])
         if result:
@@ -256,6 +312,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
                 'story': story,
                 'idea': idea,
                 'avoid_list': avoid_list,
+                'news_inspiration': news,
             }
         else:
             print("Stage 2 parse failed, using idea as prompt fallback.")
@@ -264,6 +321,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
                 'story': story,
                 'idea': idea,
                 'avoid_list': avoid_list,
+                'news_inspiration': news,
             }
     except Exception as e:
         print(f"Stage 2 failed ({e}), using idea as prompt fallback.")
@@ -272,6 +330,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
             'story': story,
             'idea': idea,
             'avoid_list': avoid_list,
+            'news_inspiration': news,
         }
 
 
@@ -467,6 +526,7 @@ def main():
     story = prompt_data['story']
     idea = prompt_data.get('idea', '')
     avoid_list = prompt_data.get('avoid_list', [])
+    news_inspiration = prompt_data.get('news_inspiration', [])
     result = asyncio.run(generate_cat_image("/tmp", timestamp, prompt))
 
     if result["status"] == "failed":
@@ -500,6 +560,7 @@ def main():
         "story": story,
         "idea": idea,
         "avoid_list": avoid_list,
+        "news_inspiration": news_inspiration,
         "url": image_url,
         "model": model_used,
         "status": "success",

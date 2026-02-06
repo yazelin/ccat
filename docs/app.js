@@ -21,6 +21,7 @@
   const lbPrompt = document.getElementById("lb-prompt");
   const lbPromptText = document.getElementById("lb-prompt-text");
   const lbCopyBtn = document.getElementById("lb-copy-btn");
+  const lbDownloadBtn = document.getElementById("lb-download-btn");
   const lbStory = document.getElementById("lb-story");
   const lbStoryText = document.getElementById("lb-story-text");
   const lbIdea = document.getElementById("lb-idea");
@@ -44,6 +45,8 @@
   const SVG_CALENDAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
   const SVG_CLIPBOARD = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
   const SVG_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  const SVG_DOWNLOAD = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  let currentCatUrl = "";
 
   let calYear = new Date().getFullYear();
   let calMonth = new Date().getMonth();
@@ -229,14 +232,17 @@
 
   // ── Lightbox ──
   function openLightbox(cat) {
+    currentCatUrl = cat.url;
     lbImg.src = cat.url;
     lbInfo.textContent = `#${cat.number} \u00b7 ${cat.timestamp} \u00b7 ${cat.model || ""}`;
+    lbDownloadBtn.innerHTML = SVG_DOWNLOAD + " Download";
     if (cat.prompt) {
       lbPromptText.textContent = cat.prompt;
       lbPrompt.classList.remove("hidden");
-      lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy";
+      lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy Prompt";
     } else {
       lbPrompt.classList.add("hidden");
+      lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy Prompt";
     }
     // Handle story (backwards compatible)
     if (cat.story) {
@@ -273,8 +279,23 @@
   lbCopyBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(lbPromptText.textContent).then(() => {
       lbCopyBtn.innerHTML = SVG_CHECK + " Copied!";
-      setTimeout(() => { lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy"; }, 1500);
+      setTimeout(() => { lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy Prompt"; }, 1500);
     });
+  });
+  lbDownloadBtn.addEventListener("click", () => {
+    if (!currentCatUrl) return;
+    fetch(currentCatUrl)
+      .then(r => r.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = currentCatUrl.split("/").pop();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
   });
   lbNewsToggle.addEventListener("click", () => lbNewsList.classList.toggle("collapsed"));
   lbAvoidToggle.addEventListener("click", () => lbAvoidList.classList.toggle("collapsed"));

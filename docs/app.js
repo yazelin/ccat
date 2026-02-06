@@ -25,6 +25,9 @@
   const lbStoryText = document.getElementById("lb-story-text");
   const lbIdea = document.getElementById("lb-idea");
   const lbIdeaText = document.getElementById("lb-idea-text");
+  const lbNews = document.getElementById("lb-news");
+  const lbNewsList = document.getElementById("lb-news-list");
+  const lbNewsToggle = document.getElementById("lb-news-toggle");
   const lbAvoid = document.getElementById("lb-avoid");
   const lbAvoidList = document.getElementById("lb-avoid-list");
   const lbAvoidToggle = document.getElementById("lb-avoid-toggle");
@@ -249,6 +252,14 @@
     } else {
       lbIdea.classList.add("hidden");
     }
+    // Handle news inspiration (backwards compatible)
+    if (cat.news_inspiration && cat.news_inspiration.length) {
+      lbNewsList.innerHTML = cat.news_inspiration.map(t => `<span class="news-tag">${t}</span>`).join("");
+      lbNewsList.classList.add("collapsed");
+      lbNews.classList.remove("hidden");
+    } else {
+      lbNews.classList.add("hidden");
+    }
     // Handle avoid list (backwards compatible)
     if (cat.avoid_list && cat.avoid_list.length) {
       lbAvoidList.innerHTML = cat.avoid_list.map(t => `<span class="avoid-tag">${t}</span>`).join("");
@@ -265,6 +276,7 @@
       setTimeout(() => { lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy"; }, 1500);
     });
   });
+  lbNewsToggle.addEventListener("click", () => lbNewsList.classList.toggle("collapsed"));
   lbAvoidToggle.addEventListener("click", () => lbAvoidList.classList.toggle("collapsed"));
   lbClose.addEventListener("click", () => lightbox.classList.add("hidden"));
   lightbox.addEventListener("click", e => { if (e.target === lightbox) lightbox.classList.add("hidden"); });

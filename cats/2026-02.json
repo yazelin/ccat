@@ -502,5 +502,32 @@
       "colossal intricate"
     ],
     "idea": "A ginger tabby cat, with intense focus, meticulously dusts a small, ancient trilobite fossil with a fine-bristled brush under a magnifying lamp on a cluttered workbench filled with scientific tools and research notes in a university paleontology lab, depicted in a sharp macro photograph."
+  },
+  {
+    "avoid_list": [
+      "貓咪專注精細動作",
+      "貓咪佩戴迷你服飾",
+      "蒸汽龐克潛水主題",
+      "以橡果為主要場景/物件",
+      "異星發光植物/蘑菇",
+      "宇宙空靈/星辰背景",
+      "中空樹木內部場景",
+      "奇幻水彩繪畫風格",
+      "柔和/瀰漫性環境光",
+      "貓咪佩戴眼鏡/護目鏡",
+      "操作複雜精密機械",
+      "學術/研究導向場景",
+      "虎斑貓頻繁作為主角"
+    ],
+    "number": 155,
+    "prompt": "A sleek black cat in a documentary photography style, captured with a 50mm prime lens, f/2.8 aperture, natural light, slight film grain, and an unedited, realistic texture. The cat is gently resting its paw on a small solar panel, which powers a tiny fan, on a sun-drenched corrugated iron rooftop in a bustling African city. Eye-level, candid shot with shallow depth of field, sharply focusing on the cat and fan. Bright, warm afternoon sunlight illuminates the scene, casting soft yet defined shadows that highlight the cat's glossy fur and the metallic textures of the roof and fan. The colors feature earthy tones of the cityscape in the background, contrasting with the cat's deep black fur and the muted colors of the fan, all bathed in warm golden hues. A digital timestamp '2026-02-06 18:38 UTC' is prominently displayed within the image, perhaps on a nearby device or as an integrated text overlay.",
+    "story": "在非洲繁華城市的熱鬧中心，一隻光亮的黑貓在陽光普照的鐵皮屋頂上找到了牠的專屬寶座。牠身旁，一個樸實的小型太陽能板輕聲運轉著，驅動著一個小風扇送來陣陣微風。這隻貓咪正享受著溫暖，彷彿理解再生能源的簡單魔法，牠寧靜的目光凝視著旋轉的扇葉，體現了自然與創新的寧靜和諧。",
+    "news_inspiration": [
+      "全球性的「留下來的理由」平台因陌生人的暖心信件成功幫助一位掙扎者選擇活下去，證明了同理心與連結的重要性。",
+      "印度女演員Neha Dhupia分享了丈夫Angad Bedi從未公開的溫馨生日影片集錦，展現了他與家人親密的生活點滴。",
+      "非洲在太陽能發展方面取得顯著進展，為全球再生能源領域帶來正向消息。",
+      "美國《農民年鑑》在面臨停刊危機後找到新買家，確保這份具有悠久歷史的刊物得以延續。"
+    ],
+    "idea": "一隻黑貓在非洲城市陽光普照的屋頂上，輕輕用爪子「充電」一個小型太陽能風扇，以紀錄片攝影風格呈現。"
   }
 ]

@@ -557,5 +557,32 @@
       "學術/研究導向場景",
       "虎斑貓頻繁作為主角"
     ]
+  },
+  {
+    "number": 157,
+    "idea": "一隻毛茸茸的貓咪在一個被雪覆蓋的拉脫維亞小村莊裡，牠的「特製糖果」店面內，以紙藝剪裁風格呈現。貓咪正仔細地將各式各樣獨特造型的紙藝糖果，小心翼翼地放入為「線上訂單」特製的手工迷你紙盒中，準備派送。",
+    "prompt": "A charming paper-cut art illustration depicting a fluffy, anthropomorphic cat in a cozy candy shop. The cat, rendered with soft curves and layered paper textures, meticulously places uniquely shaped, vibrant paper-cut candies into miniature, handcrafted paper boxes, labeled for 'online orders.' The shop interior is designed with a warm, rustic aesthetic, featuring subtle Latvian folk art motifs and wooden details. Through a window, a serene, snow-covered Latvian village is visible, presented with layered white and blue paper cutouts. The composition is a medium shot, focusing on the cat's diligent activity at a wooden counter, highlighting the intricate details of the candies and boxes. Soft, inviting warm light emanates from within the shop, casting gentle shadows that define the paper layers, contrasting with the cool, soft ambient light from the snowy exterior. The color palette is rich and cozy, with warm browns, creamy whites, and accents of deep reds and blues from traditional patterns, while the candies pop with diverse, cheerful hues. The background snow scene features cool whites, soft blues, and muted grays. Visually displayed within the image, subtly integrated into the shop's decor or a box label, is the text: '2026-02-06 20:26 UTC'.",
+    "avoid_list": [
+      "貓咪專注精細動作",
+      "貓咪佩戴迷你服飾",
+      "蒸汽龐克潛水主題",
+      "以橡果為主要場景/物件",
+      "異星發光植物/蘑菇",
+      "宇宙空靈/星辰背景",
+      "中空樹木內部場景",
+      "奇幻水彩繪畫風格",
+      "柔和/瀰漫性環境光",
+      "貓咪佩戴眼鏡/護目鏡",
+      "操作複雜精密機械",
+      "學術/研究導向場景",
+      "虎斑貓頻繁作為主角"
+    ],
+    "news_inspiration": [
+      "義大利米蘭、科爾蒂納、普雷達佐和利維尼奧等地，2026年冬季奧運會開幕式於今日隆重舉行，標誌著這項全球體育盛事的開始。",
+      "在印度，教師魯布爾·納吉因其為弱勢社區提供門戶教育並賦予女性經濟權力的「Misaal India」倡議，榮獲2026年GEMS教育全球教師獎。",
+      "拉脫維亞的「特色糖果」線上訂購日益流行，反映出當地獨特的飲食文化趨勢。",
+      "美國維吉尼亞州羅亞爾前線的塞繆爾斯公共圖書館舉辦了多項二月活動，其中包括兒童向治療犬朗讀的「Paws to Read」和製作巧克力棒的「Chocolate Fever」，充滿樂趣與溫馨。"
+    ],
+    "story": "在拉脫維亞這個以獨特甜點聞名的國度，有一隻名叫『糖糖』的貓咪，牠經營著一間名為『甜蜜捷徑』的紙藝糖果店。雖然宣稱是『線上訂購』，但其實每份訂單都由牠親手整理，充滿了當地文化的溫暖。糖糖深信，即便只是小小的糖果，也能透過手工的溫度，將甜蜜和人情味傳達到每個家，完美詮釋了當地特色糖果的魅力。"
   }
 ]

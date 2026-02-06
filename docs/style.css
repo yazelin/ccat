@@ -318,6 +318,73 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
   margin: 0;
 }
 
+/* Lightbox idea */
+#lb-idea {
+  margin-top: .6rem;
+  max-width: 600px;
+  width: 90vw;
+  background: linear-gradient(135deg, rgba(72, 187, 176, .4), rgba(116, 185, 255, .3));
+  border-radius: 12px;
+  padding: .8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, .2);
+}
+#lb-idea-text {
+  color: #fff;
+  font-size: .88rem;
+  font-style: italic;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
+}
+
+/* Lightbox avoid list */
+#lb-avoid {
+  margin-top: .5rem;
+  max-width: 600px;
+  width: 90vw;
+}
+#lb-avoid-toggle {
+  background: rgba(255, 255, 255, .15);
+  border: 1px solid rgba(255, 255, 255, .25);
+  color: rgba(255, 255, 255, .7);
+  padding: .3rem .8rem;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: .75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+#lb-avoid-toggle:hover {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+}
+#lb-avoid-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .5rem;
+  max-height: 200px;
+  overflow: hidden;
+  transition: max-height .3s ease, opacity .3s ease;
+  opacity: 1;
+}
+#lb-avoid-list.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+.avoid-tag {
+  display: inline-block;
+  padding: .2rem .6rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 179, 71, .7), rgba(255, 107, 71, .6));
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .masonry { column-count: 2; margin-right: 0; }

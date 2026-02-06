@@ -3,28 +3,50 @@
 import asyncio
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-PROMPT_META = (
-    "You are a creative storyteller AND prompt engineer for AI image generation. "
-    "Your task is to create both a story and an image prompt that match each other.\n\n"
-    "Requirements:\n"
-    "(1) A cat must be the subject or prominently featured in the image\n"
-    "(2) The date and time '{timestamp}' must be visually displayed in the image\n"
-    "(3) The image content MUST match the story - if the story describes a scene, the image should show that scene\n"
-    "(4) Use varied styles (photography, painting, illustration, etc.), unique scenes, interesting compositions\n"
-    "(5) Do NOT include any resolution keywords (like 4K, 8K, 16K, etc.) in the prompt\n"
-    "(6) If previous stories are provided, your new story should SUBTLY CONTINUE or EXTEND the narrative - "
-    "perhaps the cat goes somewhere new, meets someone, or the next moment in their journey. "
-    "However, the cat's appearance and art style MUST be different from previous images.\n\n"
-    "{recent_section}"
+SUMMARY_PROMPT = (
+    "You are analyzing recent AI-generated cat image prompts to identify repetitive patterns.\n\n"
+    "Here are the most recent prompts and stories:\n{entries}\n\n"
+    "Identify overused themes, settings, styles, poses, lighting, and vocabulary.\n"
     "Output a JSON object with exactly this format:\n"
-    '{{"prompt": "English image prompt here", "story": "繁體中文短故事，2-3句"}}\n\n'
-    "The story should be in Traditional Chinese, 2-3 sentences, describing what the cat is doing in the scene. "
-    "The image prompt should create a visual that matches the story content."
+    '{{"avoid_list": ["short phrase 1", "short phrase 2", ...]}}\n\n'
+    "Rules:\n"
+    "- Each item should be 2-5 words (e.g. 'bioluminescent forest', 'cat gazing at moon', 'cosmic ethereal glow')\n"
+    "- List 8-15 items that appear too frequently\n"
+    "- Focus on specific repeated combos, not generic concepts"
+)
+
+IDEA_PROMPT = (
+    "You are a wildly creative storyteller inventing a unique scene for an AI cat image.\n\n"
+    "{avoid_section}"
+    "Requirements:\n"
+    "(1) A cat must be the subject or prominently featured\n"
+    "(2) The cat MUST be DOING something specific (cooking, skateboarding, repairing a clock, reading a map, etc.)\n"
+    "(3) The scene MUST be set in a specific, concrete place (a 1950s diner, a Tokyo subway car, a greenhouse, a lighthouse, etc.)\n"
+    "(4) Be wildly creative - surprise me with unexpected combinations\n"
+    "(5) Vary the art style (watercolor, pixel art, oil painting, film photography, vintage poster, manga, etc.)\n\n"
+    "Output a JSON object with exactly this format:\n"
+    '{{"idea": "1-2 sentence English scene description with art style", "story": "繁體中文短故事，2-3句"}}\n\n'
+    "The story should be in Traditional Chinese, 2-3 sentences, matching the scene."
+)
+
+RENDER_PROMPT = (
+    "You are a prompt engineer converting a creative idea into a concise image generation prompt.\n\n"
+    "Idea: {idea}\n"
+    "Story: {story}\n\n"
+    "Requirements:\n"
+    "(1) The date and time '{timestamp}' MUST be visually displayed in the image\n"
+    "(2) Keep the prompt under 200 words\n"
+    "(3) Include specific art style, composition, lighting, and color details\n"
+    "(4) Do NOT include any resolution keywords (like 4K, 8K, 16K, etc.)\n"
+    "(5) The image must clearly show a cat doing the described activity\n\n"
+    "Output a JSON object with exactly this format:\n"
+    '{{"prompt": "English image prompt here"}}'
 )
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "yazelin/catime")
@@ -32,7 +54,13 @@ RELEASE_TAG = "cats"
 
 
 def get_recent_context(n: int = 10) -> dict:
-    """Return the last n prompts and stories from catlist.json."""
+    """Return the last n prompts and stories from catlist.json.
+
+    Note: This function is no longer used by the main two-stage pipeline.
+    It is kept for backwards compatibility and debugging purposes.
+    The two-stage pipeline uses creative_notes (avoid_list) instead of
+    feeding full historical prompts to prevent style imitation.
+    """
     catlist_path = Path("catlist.json")
     if not catlist_path.exists():
         return {'prompts': [], 'stories': []}
@@ -46,7 +74,6 @@ def get_recent_context(n: int = 10) -> dict:
 
 def parse_ai_response(text: str) -> dict:
     """Parse AI response that may contain JSON with prompt and story."""
-    import re
     text = text.strip()
 
     # Try to extract JSON from markdown code block
@@ -69,50 +96,169 @@ def parse_ai_response(text: str) -> dict:
     return {'prompt': text, 'story': ''}
 
 
-def generate_prompt_and_story(timestamp: str) -> dict:
-    """Use Gemini text model to generate a creative image prompt and story."""
-    context = get_recent_context(10)
-    recent_prompts = context['prompts']
-    recent_stories = context['stories']
+def parse_ai_response_generic(text: str, required_keys: list) -> dict | None:
+    """Parse AI response JSON with flexible required keys.
 
-    recent_section = ""
-    if recent_prompts:
-        bullets = "\n".join(f"- {p}" for p in recent_prompts)
-        recent_section = (
-            "IMPORTANT: Here are the most recent prompts used. "
-            "Avoid similar themes, styles, settings, and compositions:\n"
-            f"{bullets}\n\n"
-        )
-    if recent_stories:
-        story_bullets = "\n".join(f"- {s}" for s in recent_stories[-5:])
-        recent_section += (
-            "Here are recent stories. You may subtly extend the narrative thread, "
-            "but the cat's appearance and art style should be different:\n"
-            f"{story_bullets}\n\n"
-        )
+    Returns the parsed dict if all required_keys are present, or None on failure.
+    """
+    text = text.strip()
 
-    print(f"Generating prompt with {len(recent_prompts)} recent prompts and {len(recent_stories)} stories as context...")
+    # Try to extract JSON from markdown code block
+    code_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+    if code_block_match:
+        text = code_block_match.group(1)
+
+    try:
+        data = json.loads(text)
+        if isinstance(data, dict) and all(k in data for k in required_keys):
+            return data
+    except json.JSONDecodeError:
+        pass
+
+    return None
+
+
+def load_creative_notes() -> dict:
+    """Load creative_notes.json, return empty structure if not found."""
+    notes_path = Path("creative_notes.json")
+    if not notes_path.exists():
+        return {"avoid_list": [], "updated_at": None}
+    try:
+        return json.loads(notes_path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {"avoid_list": [], "updated_at": None}
+
+
+def maybe_update_creative_notes(cat_number: int) -> dict:
+    """Update creative_notes.json every 5 cats. Returns current notes."""
+    notes = load_creative_notes()
+
+    if cat_number % 5 != 0:
+        return notes
+
+    print(f"Cat #{cat_number} is a multiple of 5, updating creative notes...")
+    catlist_path = Path("catlist.json")
+    if not catlist_path.exists():
+        return notes
+
+    cats = json.loads(catlist_path.read_text())
+    recent = [c for c in cats if c.get("prompt")][-10:]
+    if not recent:
+        return notes
+
+    entries_text = "\n".join(
+        f"- Prompt: {c['prompt']}\n  Story: {c.get('story', '')}\n  Idea: {c.get('idea', '')}"
+        for c in recent
+    )
+
     try:
         from google import genai
 
         client = genai.Client()
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=PROMPT_META.format(timestamp=timestamp, recent_section=recent_section),
+            contents=SUMMARY_PROMPT.format(entries=entries_text),
         )
-        result = parse_ai_response(response.text)
-        if result['prompt']:
-            print(f"AI-generated prompt: {result['prompt'][:120]}...")
-            if result['story']:
-                print(f"AI-generated story: {result['story'][:80]}...")
-            return result
+        result = parse_ai_response_generic(response.text, ["avoid_list"])
+        if result and isinstance(result["avoid_list"], list):
+            notes = {
+                "avoid_list": result["avoid_list"],
+                "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+            }
+            Path("creative_notes.json").write_text(
+                json.dumps(notes, indent=2, ensure_ascii=False) + "\n"
+            )
+            print(f"Creative notes updated with {len(notes['avoid_list'])} avoid items.")
+            return notes
+        print("Summary response missing avoid_list, keeping old notes.")
     except Exception as e:
-        print(f"Prompt generation failed ({e}), using fallback.")
+        print(f"Creative notes update failed ({e}), keeping old notes.")
 
-    return {
+    return notes
+
+
+def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
+    """Two-stage prompt generation: idea -> render.
+
+    Stage 1: IDEA_PROMPT + avoid_list -> {"idea": ..., "story": ...}
+    Stage 2: RENDER_PROMPT + idea + story + timestamp -> {"prompt": ...}
+
+    Returns: {'prompt': str, 'story': str, 'idea': str, 'avoid_list': list}
+    """
+    avoid_list = creative_notes.get("avoid_list", [])
+    avoid_section = ""
+    if avoid_list:
+        bullets = "\n".join(f"- {item}" for item in avoid_list)
+        avoid_section = (
+            "IMPORTANT: Avoid these overused themes and patterns:\n"
+            f"{bullets}\n\n"
+        )
+
+    fallback = {
         'prompt': f"A cute cat with the date and time '{timestamp}' displayed in the image, high quality, detailed",
-        'story': "一隻可愛的貓咪正在享受美好的一天。"
+        'story': "一隻可愛的貓咪正在享受美好的一天。",
+        'idea': '',
+        'avoid_list': avoid_list,
     }
+
+    # Stage 1: Generate idea and story
+    print(f"Stage 1: Generating idea (avoid_list has {len(avoid_list)} items)...")
+    idea = ""
+    story = ""
+    try:
+        from google import genai
+
+        client = genai.Client()
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=IDEA_PROMPT.format(avoid_section=avoid_section),
+        )
+        result = parse_ai_response_generic(response.text, ["idea", "story"])
+        if result:
+            idea = result["idea"]
+            story = result["story"]
+            print(f"Idea: {idea[:120]}...")
+            print(f"Story: {story[:80]}...")
+        else:
+            print("Stage 1 parse failed, using fallback.")
+            return fallback
+    except Exception as e:
+        print(f"Stage 1 failed ({e}), using fallback.")
+        return fallback
+
+    # Stage 2: Convert idea to image prompt
+    print("Stage 2: Converting idea to image prompt...")
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=RENDER_PROMPT.format(idea=idea, story=story, timestamp=timestamp),
+        )
+        result = parse_ai_response_generic(response.text, ["prompt"])
+        if result:
+            prompt = result["prompt"]
+            print(f"Prompt: {prompt[:120]}...")
+            return {
+                'prompt': prompt,
+                'story': story,
+                'idea': idea,
+                'avoid_list': avoid_list,
+            }
+        else:
+            print("Stage 2 parse failed, using idea as prompt fallback.")
+            return {
+                'prompt': f"{idea}. The date and time '{timestamp}' is visually displayed in the image.",
+                'story': story,
+                'idea': idea,
+                'avoid_list': avoid_list,
+            }
+    except Exception as e:
+        print(f"Stage 2 failed ({e}), using idea as prompt fallback.")
+        return {
+            'prompt': f"{idea}. The date and time '{timestamp}' is visually displayed in the image.",
+            'story': story,
+            'idea': idea,
+            'avoid_list': avoid_list,
+        }
 
 
 async def generate_cat_image(output_dir: str, timestamp: str, prompt: str) -> dict:
@@ -215,14 +361,16 @@ def get_or_create_monthly_issue(now: datetime) -> str:
     return url.split("/")[-1]
 
 
-def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp: str, model_used: str, prompt: str = "", story: str = ""):
+def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp: str, model_used: str, prompt: str = "", story: str = "", idea: str = ""):
     """Post a comment on the monthly issue with the cat image."""
     prompt_line = f"**Prompt:** {prompt}\n" if prompt else ""
     story_line = f"**Story:** {story}\n" if story else ""
+    idea_line = f"**Idea:** {idea}\n" if idea else ""
     body = (
         f"## Cat #{number}\n"
         f"**Time:** {timestamp}\n"
         f"**Model:** `{model_used}`\n"
+        f"{idea_line}"
         f"{prompt_line}"
         f"{story_line}\n"
         f"![cat-{number}]({image_url})"
@@ -245,7 +393,11 @@ def update_catlist_and_push(entry: dict) -> int:
         ["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"],
         check=True,
     )
-    subprocess.run(["git", "add", "catlist.json"], check=True)
+
+    git_add_files = ["catlist.json"]
+    if Path("creative_notes.json").exists():
+        git_add_files.append("creative_notes.json")
+    subprocess.run(["git", "add"] + git_add_files, check=True)
 
     status = entry["status"]
     number = entry.get("number")
@@ -287,16 +439,21 @@ def main():
         print(f"Cat already exists for hour {now.strftime('%Y-%m-%d %H')} UTC, skipping.")
         return
 
-    print(f"Generating cat for {timestamp}...")
-    prompt_data = generate_prompt_and_story(timestamp)
-    prompt = prompt_data['prompt']
-    story = prompt_data['story']
-    result = asyncio.run(generate_cat_image("/tmp", timestamp, prompt))
-
-    # Read current count for numbering
+    # Read current count for numbering (needed before creative notes update)
     catlist_path = Path("catlist.json")
     cats = json.loads(catlist_path.read_text()) if catlist_path.exists() else []
     next_number = len(cats) + 1
+
+    # Update creative notes if needed (every 5 cats)
+    creative_notes = maybe_update_creative_notes(next_number)
+
+    print(f"Generating cat #{next_number} for {timestamp}...")
+    prompt_data = generate_prompt_and_story(timestamp, creative_notes)
+    prompt = prompt_data['prompt']
+    story = prompt_data['story']
+    idea = prompt_data.get('idea', '')
+    avoid_list = prompt_data.get('avoid_list', [])
+    result = asyncio.run(generate_cat_image("/tmp", timestamp, prompt))
 
     if result["status"] == "failed":
         print(f"Generation failed: {result['error']}", file=sys.stderr)
@@ -327,6 +484,8 @@ def main():
         "timestamp": timestamp,
         "prompt": prompt,
         "story": story,
+        "idea": idea,
+        "avoid_list": avoid_list,
         "url": image_url,
         "model": model_used,
         "status": "success",
@@ -337,7 +496,7 @@ def main():
     print("Posting issue comment...")
     issue_number = get_or_create_monthly_issue(now)
     print(f"Using monthly issue #{issue_number}")
-    post_issue_comment(issue_number, image_url, next_number, timestamp, model_used, prompt, story)
+    post_issue_comment(issue_number, image_url, next_number, timestamp, model_used, prompt, story, idea)
 
     print(f"Done! Cat #{next_number}")
 

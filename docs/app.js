@@ -23,6 +23,11 @@
   const lbCopyBtn = document.getElementById("lb-copy-btn");
   const lbStory = document.getElementById("lb-story");
   const lbStoryText = document.getElementById("lb-story-text");
+  const lbIdea = document.getElementById("lb-idea");
+  const lbIdeaText = document.getElementById("lb-idea-text");
+  const lbAvoid = document.getElementById("lb-avoid");
+  const lbAvoidList = document.getElementById("lb-avoid-list");
+  const lbAvoidToggle = document.getElementById("lb-avoid-toggle");
 
   // Date picker elements
   const datePickerBtn = document.getElementById("date-picker-btn");
@@ -237,6 +242,21 @@
     } else {
       lbStory.classList.add("hidden");
     }
+    // Handle idea (backwards compatible)
+    if (cat.idea) {
+      lbIdeaText.textContent = cat.idea;
+      lbIdea.classList.remove("hidden");
+    } else {
+      lbIdea.classList.add("hidden");
+    }
+    // Handle avoid list (backwards compatible)
+    if (cat.avoid_list && cat.avoid_list.length) {
+      lbAvoidList.innerHTML = cat.avoid_list.map(t => `<span class="avoid-tag">${t}</span>`).join("");
+      lbAvoidList.classList.add("collapsed");
+      lbAvoid.classList.remove("hidden");
+    } else {
+      lbAvoid.classList.add("hidden");
+    }
     lightbox.classList.remove("hidden");
   }
   lbCopyBtn.addEventListener("click", () => {
@@ -245,6 +265,7 @@
       setTimeout(() => { lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy"; }, 1500);
     });
   });
+  lbAvoidToggle.addEventListener("click", () => lbAvoidList.classList.toggle("collapsed"));
   lbClose.addEventListener("click", () => lightbox.classList.add("hidden"));
   lightbox.addEventListener("click", e => { if (e.target === lightbox) lightbox.classList.add("hidden"); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") lightbox.classList.add("hidden"); });

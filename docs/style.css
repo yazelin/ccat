@@ -318,46 +318,19 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
 #lb-details::-webkit-scrollbar { width: 4px; }
 #lb-details::-webkit-scrollbar-thumb { background: rgba(255,255,255,.3); border-radius: 4px; }
 
-/* Story */
-#lb-story {
-  background: linear-gradient(135deg, rgba(201, 177, 255, .4), rgba(255, 107, 157, .3));
-  border-radius: 12px;
-  padding: .5rem .8rem;
-  border: 1px solid rgba(255, 255, 255, .2);
-}
-#lb-story-text {
-  color: #fff; font-size: .85rem; line-height: 1.5;
-  text-align: center; margin: 0;
-}
-
 /* Prompt text always hidden (copy button reads from it) */
 #lb-prompt-text { display: none !important; }
 
-/* Idea */
-#lb-idea {
-  margin-top: .4rem;
-  background: linear-gradient(135deg, rgba(72, 187, 176, .4), rgba(116, 185, 255, .3));
-  border-radius: 12px;
-  padding: .5rem .8rem;
+/* Tab bar */
+#lb-tab-bar {
+  display: flex; gap: .3rem;
+  justify-content: center;
+  margin-bottom: .4rem;
+}
+#lb-tab-bar button {
+  background: rgba(255, 255, 255, .12);
   border: 1px solid rgba(255, 255, 255, .2);
-}
-#lb-idea-text {
-  color: #fff; font-size: .8rem; font-style: italic;
-  line-height: 1.5; text-align: center; margin: 0;
-}
-
-/* Toggle buttons row */
-#lb-toggles {
-  display: flex; gap: .5rem;
-  margin-top: .4rem; flex-wrap: wrap;
-}
-#lb-news, #lb-avoid { flex: 1; min-width: 0; }
-
-/* Shared toggle button style */
-#lb-news-toggle, #lb-avoid-toggle {
-  background: rgba(255, 255, 255, .15);
-  border: 1px solid rgba(255, 255, 255, .25);
-  color: rgba(255, 255, 255, .7);
+  color: rgba(255, 255, 255, .6);
   padding: .25rem .7rem;
   border-radius: 20px;
   font-family: inherit;
@@ -366,30 +339,66 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
   cursor: pointer;
   transition: background .2s, color .2s;
 }
-#lb-news-toggle:hover, #lb-avoid-toggle:hover {
+#lb-tab-bar button:hover {
+  background: rgba(255, 255, 255, .22);
+  color: rgba(255, 255, 255, .9);
+}
+#lb-tab-bar button.active {
   background: rgba(255, 255, 255, .25);
   color: #fff;
+  border-color: rgba(255, 255, 255, .4);
 }
 
-/* Shared tag list style */
-#lb-news-list, #lb-avoid-list {
+/* Tab panels */
+.lb-panel {
+  border-radius: 12px;
+  padding: .5rem .8rem;
+  border: 1px solid rgba(255, 255, 255, .2);
+}
+
+/* Story panel */
+#lb-story {
+  background: linear-gradient(135deg, rgba(201, 177, 255, .4), rgba(255, 107, 157, .3));
+}
+#lb-story-text {
+  color: #fff; font-size: .85rem; line-height: 1.5;
+  text-align: center; margin: 0;
+}
+
+/* Idea panel */
+#lb-idea {
+  background: linear-gradient(135deg, rgba(72, 187, 176, .4), rgba(116, 185, 255, .3));
+}
+#lb-idea-text {
+  color: #fff; font-size: .8rem; font-style: italic;
+  line-height: 1.5; text-align: center; margin: 0;
+}
+
+/* News panel */
+#lb-news {
+  background: linear-gradient(135deg, rgba(71, 150, 255, .3), rgba(100, 180, 255, .2));
+}
+#lb-news-list {
   display: flex; flex-wrap: wrap; gap: .3rem;
-  margin-top: .4rem; overflow: hidden;
-  transition: max-height .3s ease, opacity .3s ease;
-  opacity: 1; max-height: 200px;
 }
-#lb-news-list.collapsed, #lb-avoid-list.collapsed {
-  max-height: 0; opacity: 0; margin-top: 0;
-}
-.news-tag, .avoid-tag {
+.news-tag {
   display: inline-block; padding: .15rem .5rem;
   border-radius: 20px; color: #fff;
   font-size: .68rem; font-weight: 600;
-}
-.news-tag {
   background: linear-gradient(135deg, rgba(71, 179, 255, .7), rgba(71, 130, 255, .6));
 }
+
+/* Constraints panel */
+#lb-avoid {
+  background: linear-gradient(135deg, rgba(255, 179, 71, .3), rgba(255, 140, 60, .2));
+}
+#lb-avoid-list {
+  display: flex; flex-wrap: wrap; gap: .3rem;
+}
 .avoid-tag {
+  display: inline-block; padding: .15rem .5rem;
+  border-radius: 20px; color: #fff;
+  font-size: .68rem; font-weight: 600;
   background: linear-gradient(135deg, rgba(255, 179, 71, .7), rgba(255, 107, 71, .6));
   white-space: nowrap;
 }

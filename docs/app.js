@@ -27,10 +27,9 @@
   const lbIdeaText = document.getElementById("lb-idea-text");
   const lbNews = document.getElementById("lb-news");
   const lbNewsList = document.getElementById("lb-news-list");
-  const lbNewsToggle = document.getElementById("lb-news-toggle");
   const lbAvoid = document.getElementById("lb-avoid");
   const lbAvoidList = document.getElementById("lb-avoid-list");
-  const lbAvoidToggle = document.getElementById("lb-avoid-toggle");
+  const lbTabBar = document.getElementById("lb-tab-bar");
 
   // Date picker elements
   const datePickerBtn = document.getElementById("date-picker-btn");
@@ -230,6 +229,24 @@
   timelineToggle.addEventListener("click", () => timelineNav.classList.toggle("open"));
 
   // ── Lightbox ──
+  const TAB_DEFS = [
+    { key: "story", label: "Story", panel: lbStory },
+    { key: "idea", label: "Idea", panel: lbIdea },
+    { key: "news", label: "News", panel: lbNews },
+    { key: "avoid", label: "Constraints", panel: lbAvoid },
+  ];
+
+  function switchTab(key) {
+    TAB_DEFS.forEach(t => {
+      t.panel.classList.add("hidden");
+    });
+    lbTabBar.querySelectorAll("button").forEach(b => {
+      b.classList.toggle("active", b.dataset.tab === key);
+    });
+    const def = TAB_DEFS.find(t => t.key === key);
+    if (def) def.panel.classList.remove("hidden");
+  }
+
   function openLightbox(cat) {
     currentCatUrl = cat.url;
     lbImg.src = cat.url;
@@ -237,38 +254,43 @@
     lbDownloadBtn.innerHTML = SVG_DOWNLOAD + " Download";
     lbPromptText.textContent = cat.prompt || "";
     lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy Prompt";
-    // Handle story (backwards compatible)
-    if (cat.story) {
-      lbStoryText.textContent = cat.story;
-      lbStory.classList.remove("hidden");
-    } else {
-      lbStory.classList.add("hidden");
-    }
-    // Handle idea (backwards compatible)
-    if (cat.idea) {
-      lbIdeaText.textContent = cat.idea;
-      lbIdea.classList.remove("hidden");
-    } else {
-      lbIdea.classList.add("hidden");
-    }
-    // Handle news inspiration (backwards compatible)
+
+    // Populate panel content
+    if (cat.story) lbStoryText.textContent = cat.story;
+    if (cat.idea) lbIdeaText.textContent = cat.idea;
     if (cat.news_inspiration && cat.news_inspiration.length) {
       lbNewsList.innerHTML = cat.news_inspiration.map(t => `<span class="news-tag">${t}</span>`).join("");
-      lbNewsList.classList.add("collapsed");
-      lbNews.classList.remove("hidden");
-    } else {
-      lbNews.classList.add("hidden");
     }
-    // Handle avoid list (backwards compatible)
     if (cat.avoid_list && cat.avoid_list.length) {
       lbAvoidList.innerHTML = cat.avoid_list.map(t => `<span class="avoid-tag">${t}</span>`).join("");
-      lbAvoidList.classList.add("collapsed");
-      lbAvoid.classList.remove("hidden");
-    } else {
-      lbAvoid.classList.add("hidden");
     }
+
+    // Build tab bar (only tabs with data)
+    const available = [];
+    if (cat.story) available.push("story");
+    if (cat.idea) available.push("idea");
+    if (cat.news_inspiration && cat.news_inspiration.length) available.push("news");
+    if (cat.avoid_list && cat.avoid_list.length) available.push("avoid");
+
+    lbTabBar.innerHTML = "";
+    TAB_DEFS.forEach(t => t.panel.classList.add("hidden"));
+    available.forEach(key => {
+      const def = TAB_DEFS.find(t => t.key === key);
+      const btn = document.createElement("button");
+      btn.dataset.tab = key;
+      btn.textContent = def.label;
+      lbTabBar.appendChild(btn);
+    });
+
+    // Default to story, fallback to first available
+    if (available.length) switchTab(available[0]);
+
     lightbox.classList.remove("hidden");
   }
+
+  lbTabBar.addEventListener("click", e => {
+    if (e.target.dataset.tab) switchTab(e.target.dataset.tab);
+  });
   lbCopyBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(lbPromptText.textContent).then(() => {
       lbCopyBtn.innerHTML = SVG_CHECK + " Copied!";
@@ -282,8 +304,6 @@
     a.target = "_blank";
     a.click();
   });
-  lbNewsToggle.addEventListener("click", () => lbNewsList.classList.toggle("collapsed"));
-  lbAvoidToggle.addEventListener("click", () => lbAvoidList.classList.toggle("collapsed"));
   lbClose.addEventListener("click", () => lightbox.classList.add("hidden"));
   lightbox.addEventListener("click", e => { if (e.target === lightbox) lightbox.classList.add("hidden"); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") lightbox.classList.add("hidden"); });

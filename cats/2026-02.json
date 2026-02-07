@@ -911,5 +911,31 @@
       "貓咪與其他生物互動",
       "強調材質紋理細節"
     ]
+  },
+  {
+    "avoid_list": [
+      "水粉畫風格",
+      "淺景深攝影",
+      "貓咪專注凝視",
+      "貓咪精準操作/輕柔撥弄",
+      "未來感/高科技場景",
+      "場景中發光的物體/光影效果",
+      "銀灰色虎斑貓",
+      "貓咪工程師/工匠角色",
+      "豐富鮮豔色彩",
+      "明顯筆觸/繪畫紋理",
+      "與微型/細小物件互動"
+    ],
+    "story": "在奧魯羅的熱鬧街頭，空氣中瀰漫著鼓聲與笛聲，舞者們戴著面具，色彩斑斕。三花貓蹲踞於高處，牠的動作與節拍奇妙地同步，彷彿正在引導這場千年慶典的脈動。每一次爪子的輕揚，都像在為這場人類與神靈共舞的盛會，譜寫一曲神秘而歡快的序章。",
+    "prompt": "Ukiyo-e woodblock print, depicting an elegant calico cat perched on a weathered wooden post. The cat is raising one front paw, seemingly 'conducting' the vibrant rhythm of the distant Oruro Carnival in Bolivia. In the background, masked dancers in colorful costumes move to the beat of traditional drums and flutes, creating a dynamic street scene. The composition places the cat prominently in the foreground, with the energetic carnival unfolding in the midground and background. Features bold sumi ink outlines and flat, rich areas of traditional Ukiyo-e colors, including vermilion red, indigo blue, emerald green, and golden yellow. Bright, clear daylight illumination, typical of classic Ukiyo-e prints. Visually display the text '2026-02-07 12:32 UTC' as a stylized element within the print's design.",
+    "comment_id": 3864423176,
+    "news_inspiration": [
+      "日本札幌冰雪節於2026年2月4日至11日舉行，以其巨大的雪雕和精緻的冰雕吸引遊客。",
+      "哈薩克斯坦的阿穆爾虎重引入計劃將在2026年上半年迎來重要里程碑，預計從俄羅斯引進少量老虎以恢復其在中亞的種群。",
+      "瑞士蘇黎世大學的研究人員在人類細胞中展示了可編程的RNA引導重組酶基因編輯，為治療遺傳疾病帶來新希望。",
+      "玻利維亞奧魯羅狂歡節於2026年2月7日至17日舉行，這項結合西班牙和原住民宗教傳統的活動被聯合國教科文組織列為人類口頭和非物質遺產傑作。"
+    ],
+    "idea": "一隻優雅的三花貓，在玻利維亞奧魯羅狂歡節的喧囂街道旁，一根風化的木樁上，揮動前爪「指揮」著遠處傳統樂器的節奏。視覺風格：浮世繪。",
+    "number": 170
   }
 ]

@@ -330,7 +330,7 @@
       ? `<span class="inspiration-tag ${isNews ? 'news' : 'original'}">${isNews ? '新聞靈感' : '原創'}</span>`
       : "";
     const modelTag = cat.model ? `<span class="lb-model-tag">${cat.model}</span>` : "";
-    lbInfo.innerHTML = `<span class="lb-title">#${cat.number}${titleText} &middot; ${cat.timestamp}</span><br>${inspirationTag} ${modelTag}`;
+    lbInfo.innerHTML = `<span class="lb-title">#${cat.number}${titleText} &middot; ${cat.timestamp}</span>${inspirationTag} ${modelTag}`;
     lbDownloadBtn.innerHTML = SVG_DOWNLOAD + " Download";
 
     // Like button

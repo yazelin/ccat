@@ -286,7 +286,7 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
   text-align: center; margin-bottom: .4rem;
   display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .3rem;
 }
-#lb-info .lb-title { font-size: .85rem; }
+#lb-info .lb-title { font-size: .85rem; width: 100%; }
 #lb-info .lb-time { font-size: .75rem; opacity: .8; }
 #lb-info .lb-model-tag {
   display: inline-block; padding: .12rem .5rem;

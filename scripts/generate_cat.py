@@ -523,8 +523,12 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict, character: d
             f"{bullets}\n\n"
         )
 
-    # Stage 0: Fetch news inspiration
-    news = fetch_news_inspiration()
+    # Stage 0: Fetch news inspiration (70% chance; 30% force original)
+    if random.random() < 0.30:
+        print("Inspiration roll: forced original (30% chance)")
+        news = []
+    else:
+        news = fetch_news_inspiration()
     news_section = ""
     if news:
         bullets = "\n".join(f"- {item}" for item in news)

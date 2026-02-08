@@ -49,10 +49,13 @@ IDEA_PROMPT = (
     "(7) Vary the scene composition - sometimes include other characters (people, other animals, crowds) "
     "or objects the cat interacts with. A lone cat is fine occasionally, but don't default to it every time.\n\n"
     "Output a JSON object with exactly this format:\n"
-    '{{"idea": "繁體中文場景描述，1-2句，包含藝術風格", "story": "繁體中文短故事，2-3句", "title": "作品名稱，3-6個字的繁體中文"}}\n\n'
+    '{{"idea": "繁體中文場景描述，1-2句，包含藝術風格", "story": "繁體中文短故事，2-3句", "title": "作品名稱，3-6個字的繁體中文", "inspiration": "original 或引用的新聞摘要"}}\n\n'
     "The title should be poetic, evocative, and concise (3-6 Chinese characters). Like a painting title.\n"
     "Examples: 晨光裡的守望、雨巷漫步、星空下的琴音、午後的秘密\n\n"
-    "idea, story, and title should all be in Traditional Chinese."
+    "For the 'inspiration' field:\n"
+    "- If your idea was inspired by one of the news items, copy that exact news summary as the value.\n"
+    "- If your idea is purely from imagination (not based on any news), set it to \"original\".\n\n"
+    "idea, story, title, and inspiration should all be in Traditional Chinese (except 'original' stays English)."
 )
 
 RENDER_PROMPT = (
@@ -343,6 +346,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
         'story': "一隻可愛的貓咪正在享受美好的一天。",
         'idea': '',
         'title': '貓咪日常',
+        'inspiration': 'original',
         'avoid_list': avoid_list,
         'news_inspiration': news,
         'style_picks': {k: v['en'] for k, v in style_picks.items()},
@@ -353,6 +357,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
     idea = ""
     story = ""
     title = ""
+    inspiration = "original"
     try:
         from google import genai
 
@@ -366,7 +371,9 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
             idea = result["idea"]
             story = result["story"]
             title = result.get("title", "")
+            inspiration = result.get("inspiration", "original")
             print(f"Title: {title}")
+            print(f"Inspiration: {'🎨 原創' if inspiration == 'original' else '📰 ' + inspiration[:60]}")
             print(f"Idea: {idea[:120]}...")
             print(f"Story: {story[:80]}...")
         else:
@@ -392,6 +399,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
                 'story': story,
                 'idea': idea,
                 'title': title or '貓咪日常',
+                'inspiration': inspiration,
                 'avoid_list': avoid_list,
                 'news_inspiration': news,
                 'style_picks': {k: v['en'] for k, v in style_picks.items()},
@@ -403,6 +411,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
                 'story': story,
                 'idea': idea,
                 'title': title or '貓咪日常',
+                'inspiration': inspiration,
                 'avoid_list': avoid_list,
                 'news_inspiration': news,
                 'style_picks': {k: v['en'] for k, v in style_picks.items()},
@@ -414,6 +423,7 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
             'story': story,
             'idea': idea,
                 'title': title or '貓咪日常',
+                'inspiration': inspiration,
             'avoid_list': avoid_list,
             'news_inspiration': news,
             'style_picks': {k: v['en'] for k, v in style_picks.items()},
@@ -535,16 +545,23 @@ def get_or_create_monthly_issue(now: datetime) -> str:
     return url.split("/")[-1]
 
 
-def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp: str, model_used: str, prompt: str = "", story: str = "", idea: str = "", title: str = "") -> int | None:
+def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp: str, model_used: str, prompt: str = "", story: str = "", idea: str = "", title: str = "", inspiration: str = "") -> int | None:
     """Post a comment on the monthly issue with the cat image. Returns comment_id or None."""
     prompt_line = f"**Prompt:** {prompt}\n" if prompt else ""
     story_line = f"**Story:** {story}\n" if story else ""
     idea_line = f"**Idea:** {idea}\n" if idea else ""
     title_display = f" — {title}" if title else ""
+    if inspiration and inspiration != "original":
+        inspiration_line = f"**靈感來源:** 📰 {inspiration}\n"
+    elif inspiration == "original":
+        inspiration_line = "**靈感來源:** 🎨 AI 原創\n"
+    else:
+        inspiration_line = ""
     body = (
         f"## Cat #{number}{title_display}\n"
         f"**Time:** {timestamp}\n"
         f"**Model:** `{model_used}`\n"
+        f"{inspiration_line}"
         f"{idea_line}"
         f"{prompt_line}"
         f"{story_line}\n"
@@ -564,8 +581,8 @@ def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp
 
 def update_catlist_and_push(entry: dict) -> int:
     """Update catlist.json and monthly detail file, commit and push."""
-    index_fields = {"number", "timestamp", "url", "model", "status", "error", "title"}
-    detail_fields = {"number", "prompt", "story", "idea", "title", "news_inspiration", "avoid_list", "style_picks", "comment_id"}
+    index_fields = {"number", "timestamp", "url", "model", "status", "error", "title", "inspiration"}
+    detail_fields = {"number", "prompt", "story", "idea", "title", "inspiration", "news_inspiration", "avoid_list", "style_picks", "comment_id"}
 
     # Write lightweight index entry to catlist.json
     catlist_path = Path("catlist.json")
@@ -656,6 +673,7 @@ def main():
     news_inspiration = prompt_data.get('news_inspiration', [])
     style_picks = prompt_data.get('style_picks', {})
     title = prompt_data.get('title', '貓咪日常')
+    inspiration = prompt_data.get('inspiration', 'original')
     result = asyncio.run(generate_cat_image("/tmp", timestamp, prompt))
 
     if result["status"] == "failed":
@@ -687,7 +705,7 @@ def main():
     try:
         issue_number = get_or_create_monthly_issue(now)
         print(f"Using monthly issue #{issue_number}")
-        comment_id = post_issue_comment(issue_number, image_url, next_number, timestamp, model_used, prompt, story, idea, title)
+        comment_id = post_issue_comment(issue_number, image_url, next_number, timestamp, model_used, prompt, story, idea, title, inspiration)
         if comment_id:
             print(f"Comment ID: {comment_id}")
     except Exception as e:
@@ -701,6 +719,7 @@ def main():
         "idea": idea,
         "avoid_list": avoid_list,
         "title": title,
+        "inspiration": inspiration,
         "news_inspiration": news_inspiration,
         "style_picks": style_picks,
         "url": image_url,

@@ -211,7 +211,7 @@
           ${likeBadge}
         </div>
         <div class="card-info">
-          <div class="time">#${cat.number} ${cat.title ? cat.title + ' &middot; ' : ''}${cat.timestamp}</div>
+          <div class="time">#${cat.number} ${cat.title ? cat.title + ' ' : ''}${cat.inspiration && cat.inspiration !== 'original' ? '📰 ' : cat.title ? '🎨 ' : ''}&middot; ${cat.timestamp}</div>
           ${cat.model ? `<span class="model">${cat.model}</span>` : ""}
         </div>`;
       card.addEventListener("click", () => openLightbox(cat));
@@ -287,7 +287,10 @@
     lbCopyBtn.innerHTML = SVG_CLIPBOARD + " Copy Prompt";
 
     lbStoryText.textContent = detail.story || "";
-    lbIdeaText.textContent = detail.idea || "";
+    const inspirationText = detail.inspiration && detail.inspiration !== "original"
+      ? `\n\n📰 靈感來源：${detail.inspiration}`
+      : detail.inspiration === "original" ? "\n\n🎨 AI 原創" : "";
+    lbIdeaText.textContent = (detail.idea || "") + inspirationText;
     lbNewsList.innerHTML = "";
     lbAvoidList.innerHTML = "";
     if (detail.news_inspiration && detail.news_inspiration.length) {
@@ -321,7 +324,8 @@
     currentCatUrl = cat.url;
     lbImg.src = cat.url;
     const titlePart = cat.title ? ` ${cat.title}` : "";
-    lbInfo.textContent = `#${cat.number}${titlePart} \u00b7 ${cat.timestamp} \u00b7 ${cat.model || ""}`;
+    const inspirationIcon = cat.inspiration && cat.inspiration !== "original" ? " 📰" : cat.title ? " 🎨" : "";
+    lbInfo.textContent = `#${cat.number}${titlePart}${inspirationIcon} \u00b7 ${cat.timestamp} \u00b7 ${cat.model || ""}`;
     lbDownloadBtn.innerHTML = SVG_DOWNLOAD + " Download";
 
     // Like button

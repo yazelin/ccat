@@ -1559,5 +1559,43 @@
       "texture": "Inflatable PVC",
       "color_palette": "Retro Faded Tones"
     }
+  },
+  {
+    "idea": "這幅馬賽克藝術風格的畫面中，一隻豐腴的貓咪以自豪的神情，正推動一顆超大馬賽克紋理的南瓜，沿著連結漂浮園藝平台間的木板小徑緩步前行，金黃的暮光灑落在充滿木紋的場景上，背景是冷調藍青色的靜謐水域。",
+    "number": 191,
+    "title": "浮島豐年記",
+    "avoid_list": [
+      "貓咪專注凝視或細緻操作",
+      "鏡子自拍構圖",
+      "亮面塑膠或玩具質感",
+      "發光科技或神秘物體",
+      "電影感戲劇化光影",
+      "均勻日光燈照明",
+      "明顯底片顆粒",
+      "黑白單色高對比",
+      "復古褪色調",
+      "特寫近景構圖",
+      "畫面內顯示日期時間",
+      "科學或考古探索主題",
+      "微型工具或物件"
+    ],
+    "inspiration": "加拿大的「食物自由日」落在2026年2月8日，標誌著普通加拿大家庭已賺取足夠收入支付全年雜貨開支。",
+    "comment_id": 3867099540,
+    "story": "這隻貓咪在自家水上花園裡享受著黃金時刻，牠推動著這顆顯眼的南瓜，彷彿在慶祝豐收。透過這份喜悅與滿足，牠展現了對生活和食物的無憂無慮，達成了屬於自己的「食物自由日」。",
+    "prompt": "Mosaic art style, composed of small colored tiles with a grouted texture, evoking an ancient Roman or Byzantine aesthetic. A plump cat, with a proud and contented expression, slowly pushes an oversized mosaic-textured pumpkin along a wooden plank path. This path is part of a miniature floating garden platform, seen from a slightly aerial perspective, levitating above serene, cool blue-teal water. Golden hour lighting casts a warm sunset glow, creating long, soft shadows and a golden rim light on the cat and pumpkin. The wooden surfaces feature natural wood grain texture with visible knots and lines, displaying rich warm tones and an organic tactile surface. The cool blue-teal background water has icy undertones, contributing to a crisp, serene, and calm mood. The cat embodies joy and a carefree attitude, celebrating a bountiful harvest. Visually displayed within the image: \"2026-02-08 12:33 UTC\".",
+    "news_inspiration": [
+      "加拿大的「食物自由日」落在2026年2月8日，標誌著普通加拿大家庭已賺取足夠收入支付全年雜貨開支。",
+      "波多黎各歌手Bad Bunny將在超級盃LX中場秀上帶來史上首次全西班牙語表演，邀請觀眾盡情跳舞。",
+      "挪威斯瓦爾巴群島的北極熊體型變得更胖且數量增加，顯示牠們成功適應了快速變化的環境。",
+      "厄瓜多爾加拉帕戈斯群島的弗洛里亞納巨龜再引入計畫，正帶動當地生態系統的全面復甦。",
+      "澳洲雪梨正在展出藝術家Ron Mueck的新作品《浩劫》，這件雕塑描繪了一群憤怒的動物。"
+    ],
+    "style_picks": {
+      "art_style": "Mosaic",
+      "composition": "Floating Island Scene",
+      "lighting": "Golden Hour",
+      "texture": "Wood Grain",
+      "color_palette": "Cool Tones (Blue / Teal)"
+    }
   }
 ]

@@ -211,7 +211,7 @@
           ${likeBadge}
         </div>
         <div class="card-info">
-          <div class="time">#${cat.number} &middot; ${cat.timestamp}</div>
+          <div class="time">#${cat.number} ${cat.title ? cat.title + ' &middot; ' : ''}${cat.timestamp}</div>
           ${cat.model ? `<span class="model">${cat.model}</span>` : ""}
         </div>`;
       card.addEventListener("click", () => openLightbox(cat));
@@ -320,7 +320,8 @@
   function openLightbox(cat) {
     currentCatUrl = cat.url;
     lbImg.src = cat.url;
-    lbInfo.textContent = `#${cat.number} \u00b7 ${cat.timestamp} \u00b7 ${cat.model || ""}`;
+    const titlePart = cat.title ? ` ${cat.title}` : "";
+    lbInfo.textContent = `#${cat.number}${titlePart} \u00b7 ${cat.timestamp} \u00b7 ${cat.model || ""}`;
     lbDownloadBtn.innerHTML = SVG_DOWNLOAD + " Download";
 
     // Like button

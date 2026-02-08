@@ -284,7 +284,27 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
   color: rgba(255,255,255,.8); font-size: .8rem;
   font-weight: 600; text-shadow: 0 1px 4px rgba(0,0,0,.3);
   text-align: center; margin-bottom: .4rem;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .3rem;
 }
+#lb-info .lb-title { font-size: .85rem; }
+#lb-info .lb-time { font-size: .75rem; opacity: .8; }
+#lb-info .lb-model-tag {
+  display: inline-block; padding: .12rem .5rem;
+  border-radius: 20px; font-size: .65rem; font-weight: 700;
+  color: #fff; background: linear-gradient(135deg, var(--blue), var(--purple));
+}
+.inspiration-tag {
+  display: inline-block; padding: .12rem .5rem;
+  border-radius: 20px; font-size: .65rem; font-weight: 700;
+  color: #fff; white-space: nowrap;
+}
+.inspiration-tag.news {
+  background: linear-gradient(135deg, rgba(71, 179, 255, .8), rgba(71, 130, 255, .7));
+}
+.inspiration-tag.original {
+  background: linear-gradient(135deg, rgba(168, 130, 255, .8), rgba(200, 100, 255, .7));
+}
+.card-info .inspiration-tag { margin-top: .3rem; }
 
 /* Image wrapper - contains overlay elements */
 #lb-img-wrap {

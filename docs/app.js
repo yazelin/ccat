@@ -211,7 +211,8 @@
           ${likeBadge}
         </div>
         <div class="card-info">
-          <div class="time">#${cat.number} ${cat.title ? cat.title + ' ' : ''}${cat.inspiration && cat.inspiration !== 'original' ? '📰 ' : cat.title ? '🎨 ' : ''}&middot; ${cat.timestamp}</div>
+          <div class="time">#${cat.number} ${cat.title ? cat.title + ' &middot; ' : ''}${cat.timestamp}</div>
+          ${cat.inspiration ? `<span class="inspiration-tag ${cat.inspiration !== 'original' ? 'news' : 'original'}">${cat.inspiration !== 'original' ? '新聞靈感' : '原創'}</span>` : ''}
           ${cat.model ? `<span class="model">${cat.model}</span>` : ""}
         </div>`;
       card.addEventListener("click", () => openLightbox(cat));
@@ -288,8 +289,8 @@
 
     lbStoryText.textContent = detail.story || "";
     const inspirationText = detail.inspiration && detail.inspiration !== "original"
-      ? `\n\n📰 靈感來源：${detail.inspiration}`
-      : detail.inspiration === "original" ? "\n\n🎨 AI 原創" : "";
+      ? `\n\n靈感來源：${detail.inspiration}`
+      : "";
     lbIdeaText.textContent = (detail.idea || "") + inspirationText;
     lbNewsList.innerHTML = "";
     lbAvoidList.innerHTML = "";
@@ -323,9 +324,13 @@
   function openLightbox(cat) {
     currentCatUrl = cat.url;
     lbImg.src = cat.url;
-    const titlePart = cat.title ? ` ${cat.title}` : "";
-    const inspirationIcon = cat.inspiration && cat.inspiration !== "original" ? " 📰" : cat.title ? " 🎨" : "";
-    lbInfo.textContent = `#${cat.number}${titlePart}${inspirationIcon} \u00b7 ${cat.timestamp} \u00b7 ${cat.model || ""}`;
+    const titleText = cat.title ? ` ${cat.title}` : "";
+    const isNews = cat.inspiration && cat.inspiration !== "original";
+    const inspirationTag = cat.inspiration
+      ? `<span class="inspiration-tag ${isNews ? 'news' : 'original'}">${isNews ? '新聞靈感' : '原創'}</span>`
+      : "";
+    const modelTag = cat.model ? `<span class="lb-model-tag">${cat.model}</span>` : "";
+    lbInfo.innerHTML = `<span class="lb-title">#${cat.number}${titleText}</span> ${inspirationTag} <span class="lb-time">${cat.timestamp}</span> ${modelTag}`;
     lbDownloadBtn.innerHTML = SVG_DOWNLOAD + " Download";
 
     // Like button

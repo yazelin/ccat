@@ -21,6 +21,8 @@
   --text: #5a4a5a;
   --text-muted: #b8a0b8;
   --shadow: rgba(255, 107, 157, .15);
+  --topbar-bg: linear-gradient(135deg, #fff 0%, var(--pink-pale) 100%);
+  --topbar-border: var(--pink-light);
 }
 
 body {
@@ -39,8 +41,8 @@ body {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; gap: .6rem;
   padding: .6rem 1rem;
-  background: linear-gradient(135deg, #fff 0%, var(--pink-pale) 100%);
-  border-bottom: 3px solid var(--pink-light);
+  background: var(--topbar-bg);
+  border-bottom: 3px solid var(--topbar-border);
   box-shadow: 0 2px 16px var(--shadow);
   flex-wrap: wrap;
 }
@@ -574,21 +576,18 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
 
 /* Dark mode - class-based for manual toggle */
 [data-theme="dark"] {
-    --bg: #1a1520;
-    --surface: #2a2030;
-    --card-1: #2a1f2a;
-    --card-2: #1f2530;
-    --card-3: #1f2a1f;
-    --card-4: #2a1f30;
-    --card-5: #2a251f;
-    --text: #e0d0e0;
-    --text-muted: #8a7a8a;
-    --shadow: rgba(0, 0, 0, .3);
-  }
-}
-[data-theme="dark"] #topbar {
-  background: linear-gradient(135deg, #2a2030 0%, #1a1520 100%);
-  border-bottom-color: rgba(255, 107, 157, .3);
+  --bg: #1a1520;
+  --surface: #2a2030;
+  --card-1: #2a1f2a;
+  --card-2: #1f2530;
+  --card-3: #1f2a1f;
+  --card-4: #2a1f30;
+  --card-5: #2a251f;
+  --text: #e0d0e0;
+  --text-muted: #8a7a8a;
+  --shadow: rgba(0, 0, 0, .3);
+  --topbar-bg: linear-gradient(135deg, #2a2030 0%, #1a1520 100%);
+  --topbar-border: rgba(255, 107, 157, .3);
 }
 [data-theme="dark"] .filters select,
 [data-theme="dark"] .date-picker-btn,

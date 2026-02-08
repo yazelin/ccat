@@ -1,0 +1,38 @@
+{
+  "id": "lingling",
+  "name": {
+    "zh": "鈴鈴",
+    "en": "Lingling"
+  },
+  "appearance": {
+    "breed": "白色長毛貓，布偶貓風格",
+    "body": "中等身型，毛量極為蓬鬆，整隻像一團會移動的棉花糖",
+    "face": "小巧的圓臉埋在蓬鬆白毛裡，大而圓的寶石藍色眼睛，眼睛佔了臉的三分之一，自帶少女漫畫星星眼效果",
+    "fur_pattern": "全身純白色長毛，蓬鬆如雲朵。耳朵內側和鼻頭是淡粉紅色。尾巴像一支巨大的白色羽毛撢子",
+    "distinctive_features": [
+      "脖子上永遠戴著粉紅色蝴蝶結鈴鐺項圈，走路會發出清脆的叮鈴聲",
+      "眼睛是非常清澈的寶石藍，像藍寶石一樣",
+      "粉紅色的肉球（肉掌），被毛蓋住但偶爾露出來",
+      "耳朵尖端有一撮微微翹起的毛（耳尖毛）",
+      "毛太蓬鬆所以看起來比實際體型大一倍"
+    ],
+    "size": "中等，但毛量讓她看起來很大一團"
+  },
+  "personality": {
+    "traits": ["天真", "好奇", "愛撒嬌", "有點笨但很努力", "容易被嚇到"],
+    "quirks": ["追蝴蝶會追到撞牆", "被摸頭會瞬間趴下翻肚", "喜歡收集亮晶晶的小東西", "打噴嚏的時候會往後彈"],
+    "voice": "軟萌、天真、偶爾發出驚訝的小叫聲"
+  },
+  "visual_prompt_snippet": "a fluffy white longhair cat with voluminous cloud-like fur, large round sapphire-blue gemstone eyes taking up a third of the small round face, pink inner ears and pink nose, wearing a pink ribbon bow collar with a small golden bell, fur so fluffy the cat looks twice its actual size, feathery plume tail like a white feather duster, visible pink toe beans when paws are shown, cute tufted ear tips",
+  "story_context": "鈴鈴是花店老闆的愛貓，名字來自她脖子上那個永遠叮叮作響的粉紅鈴鐺。她是四隻裡最年輕的，對什麼都好奇，常常在花店裡把自己弄得滿身花瓣。走到哪裡都能聽到清脆的鈴聲，街坊都說：『聽到鈴聲就知道鈴鈴來了。』",
+  "preferred_settings": ["花店", "花園", "甜點店", "遊樂場", "陽台", "蝴蝶園", "粉色系的任何地方"],
+  "seasonal_variants": {
+    "spring": "在櫻花樹下追蝴蝶，白毛上沾滿粉色花瓣",
+    "summer": "戴著迷你草帽和太陽花，在向日葵田裡探險",
+    "autumn": "穿著小毛衣，在落葉堆裡打滾（毛上沾滿紅葉）",
+    "winter": "戴著聖誕紅蝴蝶結，在雪地裡留下蓬鬆的腳印"
+  },
+  "appearances": 0,
+  "last_appeared": null,
+  "created_at": "2026-02-09"
+}

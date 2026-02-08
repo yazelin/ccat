@@ -1,0 +1,38 @@
+{
+  "id": "momo",
+  "name": {
+    "zh": "墨墨",
+    "en": "Momo"
+  },
+  "appearance": {
+    "breed": "純黑短毛貓，Bombay 貓風格",
+    "body": "修長優雅，肌肉線條流暢，動作輕盈無聲",
+    "face": "楔形臉，輪廓分明，大而圓的金琥珀色眼睛，在暗處會微微發光",
+    "fur_pattern": "全身純黑無任何雜色，短毛帶有緞面般的光澤，光線下隱約泛出深棕色暖調",
+    "distinctive_features": [
+      "眼睛是非常亮的金琥珀色，像兩顆琥珀寶石",
+      "長而直的白色鬍鬚，在黑毛上特別顯眼",
+      "尾巴修長，末端微微上翹",
+      "耳朵內側是深粉棕色",
+      "走路時完全無聲，像影子一樣"
+    ],
+    "size": "中等偏瘦，修長型"
+  },
+  "personality": {
+    "traits": ["優雅", "安靜", "聰明", "獨立但偶爾撒嬌", "有點傲嬌"],
+    "quirks": ["喜歡待在高處俯瞰一切", "會挑書本的封面趴著睡", "被摸下巴會忍不住瞇眼"],
+    "voice": "沉穩、神秘、偶爾流露溫柔"
+  },
+  "visual_prompt_snippet": "a sleek elegant solid black shorthair cat with luminous golden-amber eyes like amber gemstones, satin-sheen black fur with subtle warm brown undertones in light, long prominent white whiskers, slender athletic build, long tail with a slight upward curl at the tip, poised and graceful posture",
+  "story_context": "墨墨得名於牠如墨般純粹的黑色。牠是舊書店的常客，喜歡窩在書堆和古物之間，彷彿自己也是一件有年份的藝術品。書店老闆說墨墨有時候會盯著某本書看很久，像在讀書一樣。",
+  "preferred_settings": ["舊書店", "圖書館", "美術館", "古董店", "咖啡廳窗邊", "月光下的屋頂", "鋼琴旁"],
+  "seasonal_variants": {
+    "spring": "在雨天的窗台上看著窗外的櫻花雨",
+    "summer": "在老宅的竹蓆上優雅地納涼",
+    "autumn": "在書店裡被一圈楓葉色的書包圍",
+    "winter": "窩在壁爐前的天鵝絨靠墊上，火光映在金色眼睛裡"
+  },
+  "appearances": 0,
+  "last_appeared": null,
+  "created_at": "2026-02-09"
+}

@@ -41,6 +41,7 @@
   const gallery = document.getElementById("gallery");
   const endMsg = document.getElementById("end-msg");
   const modelSelect = document.getElementById("model-filter");
+  const characterSelect = document.getElementById("character-filter");
   const searchInput = document.getElementById("search-input");
   const catCount = document.getElementById("cat-count");
   const timelineList = document.getElementById("timeline-list");
@@ -101,6 +102,7 @@
       allCats = data.filter(c => c.status !== "failed").reverse();
       allCats.forEach(c => catDates.add(c.timestamp.split(" ")[0]));
       populateModels();
+      populateCharacters();
       buildTimeline();
       // Init calendar to latest cat's month
       if (allCats.length) {
@@ -120,6 +122,15 @@
       const opt = document.createElement("option");
       opt.value = m; opt.textContent = m;
       modelSelect.appendChild(opt);
+    });
+  }
+
+  function populateCharacters() {
+    const chars = [...new Set(allCats.map(c => c.character_name).filter(Boolean))].sort();
+    chars.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name; opt.textContent = name;
+      characterSelect.appendChild(opt);
     });
   }
 
@@ -210,8 +221,10 @@
   // ── Filter ──
   function applyFilter() {
     const model = modelSelect.value;
+    const charFilter = characterSelect.value;
     filtered = allCats.filter(c => {
       if (model && c.model !== model) return false;
+      if (charFilter && c.character_name !== charFilter) return false;
       if (selectedDate && !c.timestamp.startsWith(selectedDate)) return false;
       if (searchQuery) {
         const numStr = String(c.number);
@@ -229,6 +242,7 @@
   }
 
   modelSelect.addEventListener("change", applyFilter);
+  characterSelect.addEventListener("change", applyFilter);
 
   // ── Image error handler ──
   function handleImgError(img, isLightbox) {
@@ -271,6 +285,9 @@
       card.dataset.catIndex = loaded + i;
       const likeCount = likesData[String(cat.number)] || 0;
       const likeBadge = likeCount > 0 ? `<span class="like-badge">${SVG_HEART} ${likeCount}</span>` : "";
+      const charTag = cat.character_name
+        ? `<span class="character-tag${cat.is_seasonal ? ' seasonal' : ''}">${cat.character_name}${cat.season ? ' · ' + {spring:'🌸',summer:'☀️',autumn:'🍁',winter:'❄️'}[cat.season] : ''}</span>`
+        : '';
       card.innerHTML = `
         <div class="card-img-wrap">
           <img src="${cat.url}" alt="Cat #${cat.number}" loading="lazy">
@@ -278,6 +295,7 @@
         </div>
         <div class="card-info">
           <div class="time">#${cat.number} ${cat.title ? cat.title + ' &middot; ' : ''}${cat.timestamp}</div>
+          ${charTag}
           ${cat.inspiration ? `<span class="inspiration-tag ${cat.inspiration !== 'original' ? 'news' : 'original'}">${cat.inspiration !== 'original' ? '新聞靈感' : '原創'}</span>` : ''}
           ${cat.model ? `<span class="model">${cat.model}</span>` : ""}
         </div>`;
@@ -432,7 +450,10 @@
       ? `<span class="inspiration-tag ${isNews ? 'news' : 'original'}">${isNews ? '新聞靈感' : '原創'}</span>`
       : "";
     const modelTag = cat.model ? `<span class="lb-model-tag">${cat.model}</span>` : "";
-    lbInfo.innerHTML = `<span class="lb-title">#${cat.number}${titleText} &middot; ${cat.timestamp}</span>${inspirationTag} ${modelTag}`;
+    const lbCharTag = cat.character_name
+      ? `<span class="character-tag${cat.is_seasonal ? ' seasonal' : ''}">${cat.character_name}${cat.season ? ' · ' + {spring:'🌸',summer:'☀️',autumn:'🍁',winter:'❄️'}[cat.season] : ''}</span>`
+      : '';
+    lbInfo.innerHTML = `<span class="lb-title">#${cat.number}${titleText} &middot; ${cat.timestamp}</span>${lbCharTag} ${inspirationTag} ${modelTag}`;
     lbDownloadBtn.innerHTML = SVG_DOWNLOAD + " Download";
 
     const catKey = String(cat.number);

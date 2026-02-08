@@ -408,6 +408,17 @@ button svg, .date-picker-btn svg { vertical-align: -0.15em; }
 .inspiration-tag.original {
   background: linear-gradient(135deg, rgba(168, 130, 255, .8), rgba(200, 100, 255, .7));
 }
+/* Character tag */
+.character-tag {
+  display: inline-block; padding: .12rem .5rem;
+  border-radius: 20px; font-size: .65rem; font-weight: 700;
+  color: #fff; white-space: nowrap;
+  background: linear-gradient(135deg, rgba(255, 179, 71, .85), rgba(255, 140, 100, .75));
+}
+.character-tag.seasonal {
+  background: linear-gradient(135deg, rgba(168, 230, 207, .9), rgba(116, 185, 255, .8));
+}
+.card-info .character-tag { margin-top: .3rem; margin-right: .3rem; }
 .card-info .inspiration-tag { margin-top: .3rem; }
 
 /* Image wrapper - contains overlay elements */

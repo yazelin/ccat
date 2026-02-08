@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "probability": {
+    "original": 0.50,
+    "recurring": 0.35,
+    "seasonal": 0.15
+  },
+  "seasonal_months": {
+    "spring": [3, 4, 5],
+    "summer": [6, 7, 8],
+    "autumn": [9, 10, 11],
+    "winter": [12, 1, 2]
+  },
+  "cooldown_hours": 24,
+  "characters": [
+    {
+      "id": "mochi",
+      "file": "mochi.json",
+      "enabled": true
+    },
+    {
+      "id": "momo",
+      "file": "momo.json",
+      "enabled": true
+    },
+    {
+      "id": "captain",
+      "file": "captain.json",
+      "enabled": true
+    },
+    {
+      "id": "lingling",
+      "file": "lingling.json",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "id": "mochi",
+  "name": {
+    "zh": "麻糬",
+    "en": "Mochi"
+  },
+  "appearance": {
+    "breed": "橘白色短毛家貓",
+    "body": "圓滾滾的身型，明顯偏胖，四肢短而粗，像一顆花生麻糬",
+    "face": "扁圓臉，大圓眼，琥珀色瞳孔，表情永遠帶著一點呆萌",
+    "fur_pattern": "白底為主，背部和頭頂有大塊橘色斑，像撒了花生粉。肚子全白，尾巴橘白相間環狀紋路",
+    "distinctive_features": [
+      "鼻頭是粉紅色的，中間有一小點橘色",
+      "右前腳整隻是橘色（像戴了一隻手套）",
+      "耳朵內側是淡粉色",
+      "走路時肚子會微微晃動"
+    ],
+    "size": "中等偏胖，圓球體型"
+  },
+  "personality": {
+    "traits": ["好奇", "貪吃", "慵懶但偶爾爆發活力", "親人"],
+    "quirks": ["看到食物眼睛會放大兩倍", "喜歡鑽進剛好塞得下的箱子和袋子", "吃飽會瞇眼打呼"],
+    "voice": "溫暖、呆萌、有點傻"
+  },
+  "visual_prompt_snippet": "a chubby round orange-and-white shorthair cat with amber eyes, pink nose with a tiny orange spot, distinctive orange right front paw like wearing one glove, white belly, orange-and-white ringed tail, flat round face with a slightly dopey lovable expression",
+  "story_context": "麻糬是一隻住在老街市場裡的橘白貓，名字來自牠圓滾滾像麻糬的身型和橘白配色像撒了花生粉。最愛在各個攤位間巡邏「試吃」，老闆們又愛又恨，但誰也捨不得趕走這顆會走路的麻糬。",
+  "preferred_settings": ["傳統市場", "夜市", "街邊小吃攤", "老街巷弄", "廚房", "麵包店", "便利商店"],
+  "seasonal_variants": {
+    "spring": "戴著花環，在櫻花樹下野餐",
+    "summer": "穿著迷你浮水衣，在海邊吃西瓜",
+    "autumn": "圍著格紋圍巾，在烤番薯攤旁取暖",
+    "winter": "窩在暖桌裡只露出頭，旁邊放著年糕"
+  },
+  "appearances": 0,
+  "last_appeared": null,
+  "created_at": "2026-02-09"
+}

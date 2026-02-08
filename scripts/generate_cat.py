@@ -128,6 +128,209 @@ def format_style_prompt_snippet(picks: dict) -> str:
 REPO = os.environ.get("GITHUB_REPOSITORY", "yazelin/catime")
 RELEASE_TAG = "cats"
 
+# ── Character System ──
+
+def load_character_index() -> dict | None:
+    """Load characters/index.json. Returns None if not found."""
+    index_path = Path("characters/index.json")
+    if not index_path.exists():
+        return None
+    try:
+        return json.loads(index_path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def load_character(char_id: str) -> dict | None:
+    """Load a character profile by ID."""
+    index = load_character_index()
+    if not index:
+        return None
+    for entry in index.get("characters", []):
+        if entry["id"] == char_id and entry.get("enabled", True):
+            char_path = Path("characters") / entry["file"]
+            if char_path.exists():
+                try:
+                    return json.loads(char_path.read_text())
+                except (json.JSONDecodeError, OSError):
+                    pass
+    return None
+
+
+def get_current_season(month: int, index: dict) -> str | None:
+    """Get season name for the given month."""
+    for season, months in index.get("seasonal_months", {}).items():
+        if month in months:
+            return season
+    return None
+
+
+def select_character(now: datetime) -> dict | None:
+    """Select a character for this generation, or None for original.
+
+    Returns the full character profile dict, or None.
+    """
+    index = load_character_index()
+    if not index or not index.get("characters"):
+        return None
+
+    prob = index.get("probability", {})
+    original_prob = prob.get("original", 0.50)
+    recurring_prob = prob.get("recurring", 0.35)
+    # seasonal_prob is the remainder
+
+    roll = random.random()
+
+    if roll < original_prob:
+        print("Character roll: original (no character)")
+        return None
+
+    # Load all enabled characters
+    all_chars = []
+    for entry in index["characters"]:
+        if not entry.get("enabled", True):
+            continue
+        char = load_character(entry["id"])
+        if char:
+            all_chars.append(char)
+
+    if not all_chars:
+        return None
+
+    cooldown_hours = index.get("cooldown_hours", 24)
+
+    def is_available(char: dict) -> bool:
+        """Check if character is not in cooldown."""
+        last = char.get("last_appeared")
+        if not last:
+            return True
+        try:
+            last_dt = datetime.strptime(last, "%Y-%m-%d %H:%M UTC").replace(tzinfo=timezone.utc)
+            return (now - last_dt).total_seconds() > cooldown_hours * 3600
+        except ValueError:
+            return True
+
+    def weight(char: dict) -> float:
+        """Less appearances = higher weight."""
+        return 1.0 / (1 + char.get("appearances", 0))
+
+    current_season = get_current_season(now.month, index)
+
+    if roll < original_prob + recurring_prob:
+        # Recurring: pick any available character
+        candidates = [c for c in all_chars if is_available(c)]
+        if not candidates:
+            print("Character roll: recurring, but all in cooldown → original")
+            return None
+        print(f"Character roll: recurring ({len(candidates)} available)")
+    else:
+        # Seasonal: prefer seasonal variant, same characters just themed
+        candidates = [c for c in all_chars if is_available(c)]
+        if not candidates:
+            print("Character roll: seasonal, but all in cooldown → original")
+            return None
+        print(f"Character roll: seasonal/{current_season} ({len(candidates)} available)")
+
+    # Weighted random pick
+    weights = [weight(c) for c in candidates]
+    total = sum(weights)
+    r = random.random() * total
+    cumulative = 0
+    for i, w in enumerate(weights):
+        cumulative += w
+        if r <= cumulative:
+            chosen = candidates[i]
+            break
+    else:
+        chosen = candidates[-1]
+
+    # Determine if seasonal theme applies
+    is_seasonal = roll >= original_prob + recurring_prob and current_season
+    chosen = dict(chosen)  # copy to avoid mutating cache
+    chosen["_is_seasonal"] = is_seasonal
+    chosen["_season"] = current_season if is_seasonal else None
+
+    print(f"Selected character: {chosen['name']['zh']} ({chosen['id']})"
+          + (f" [seasonal: {current_season}]" if is_seasonal else ""))
+    return chosen
+
+
+def format_character_for_idea(char: dict) -> str:
+    """Format character info for IDEA_PROMPT injection."""
+    appearance = char.get("appearance", {})
+    personality = char.get("personality", {})
+
+    appearance_lines = []
+    for key in ["breed", "body", "face", "fur_pattern", "size"]:
+        if key in appearance:
+            appearance_lines.append(appearance[key])
+    if appearance.get("distinctive_features"):
+        appearance_lines.extend(appearance["distinctive_features"])
+
+    traits = "、".join(personality.get("traits", []))
+    quirks = "、".join(personality.get("quirks", []))
+
+    seasonal_note = ""
+    if char.get("_is_seasonal") and char.get("_season"):
+        season = char["_season"]
+        variant = char.get("seasonal_variants", {}).get(season, "")
+        if variant:
+            seasonal_note = f"\n季節主題（{season}）：{variant}\n你必須將這個季節主題融入場景設計中。\n"
+
+    return (
+        f"TODAY'S CHARACTER: {char['name']['zh']} ({char['name']['en']})\n"
+        f"外觀：{'。'.join(appearance_lines)}\n"
+        f"個性：{traits}\n"
+        f"小癖好：{quirks}\n"
+        f"背景故事：{char.get('story_context', '')}\n"
+        f"偏好場景：{'、'.join(char.get('preferred_settings', []))}\n"
+        f"{seasonal_note}\n"
+        f"你必須讓這個角色成為畫面的主角。\n"
+        f"場景和行為要符合這個角色的個性和偏好。\n"
+        f"保持角色的外觀特徵一致，這是系列角色。\n"
+    )
+
+
+def format_character_for_render(char: dict) -> str:
+    """Format character visual snippet for RENDER_PROMPT injection."""
+    snippet = char.get("visual_prompt_snippet", "")
+    if not snippet:
+        return ""
+
+    seasonal_addition = ""
+    if char.get("_is_seasonal") and char.get("_season"):
+        season = char["_season"]
+        variant = char.get("seasonal_variants", {}).get(season, "")
+        if variant:
+            seasonal_addition = f" Seasonal theme: {season} - the cat should be dressed/styled appropriately for {season}."
+
+    return (
+        f"\nCHARACTER CONSISTENCY (CRITICAL):\n"
+        f"The cat in this image MUST match this exact description: {snippet}\n"
+        f"Maintain ALL of these visual features precisely. This is a recurring character.{seasonal_addition}\n"
+    )
+
+
+def update_character_after_generation(char_id: str, cat_number: int, timestamp: str):
+    """Update character appearance count and last_appeared timestamp."""
+    index = load_character_index()
+    if not index:
+        return
+
+    for entry in index["characters"]:
+        if entry["id"] == char_id:
+            char_path = Path("characters") / entry["file"]
+            if char_path.exists():
+                try:
+                    char = json.loads(char_path.read_text())
+                    char["appearances"] = char.get("appearances", 0) + 1
+                    char["last_appeared"] = timestamp
+                    char_path.write_text(json.dumps(char, indent=2, ensure_ascii=False) + "\n")
+                    print(f"Updated {char_id}: appearances={char['appearances']}, last_appeared={timestamp}")
+                except (json.JSONDecodeError, OSError) as e:
+                    print(f"Failed to update character {char_id}: {e}")
+            break
+
 
 def get_recent_context(n: int = 10) -> dict:
     """Return the last n prompts and stories from catlist.json.
@@ -302,7 +505,7 @@ def fetch_news_inspiration() -> list[str]:
     return []
 
 
-def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
+def generate_prompt_and_story(timestamp: str, creative_notes: dict, character: dict | None = None) -> dict:
     """Three-stage prompt generation: news -> idea -> render.
 
     Stage 0: NEWS_PROMPT + Google Search -> [news summaries] (optional inspiration)
@@ -332,6 +535,10 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
             f"{bullets}\n\n"
         )
 
+    # Character section for prompts
+    character_idea_section = format_character_for_idea(character) if character else ""
+    character_render_section = format_character_for_render(character) if character else ""
+
     # Pick random styles from style_reference.json
     style_picks = pick_random_styles()
     style_section = format_style_suggestion(style_picks)
@@ -340,6 +547,11 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
 
     if style_picks:
         print(f"Style picks: {', '.join(s['en'] for s in style_picks.values())}")
+
+    char_id = character["id"] if character else None
+    char_name = character["name"]["zh"] if character else None
+    is_seasonal = character.get("_is_seasonal", False) if character else False
+    season = character.get("_season") if character else None
 
     fallback = {
         'prompt': f"A cute cat with the date and time '{timestamp}' displayed in the image, high quality, detailed",
@@ -350,6 +562,10 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
         'avoid_list': avoid_list,
         'news_inspiration': news,
         'style_picks': {k: v['en'] for k, v in style_picks.items()},
+        'character': char_id,
+        'character_name': char_name,
+        'is_seasonal': is_seasonal,
+        'season': season,
     }
 
     # Stage 1: Generate idea and story
@@ -362,9 +578,12 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
         from google import genai
 
         client = genai.Client()
+        idea_input = IDEA_PROMPT.format(news_section=news_section, avoid_section=avoid_section, style_section=style_section)
+        if character_idea_section:
+            idea_input = character_idea_section + "\n" + idea_input
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=IDEA_PROMPT.format(news_section=news_section, avoid_section=avoid_section, style_section=style_section),
+            contents=idea_input,
         )
         result = parse_ai_response_generic(response.text, ["idea", "story"])
         if result:
@@ -386,9 +605,12 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
     # Stage 2: Convert idea to image prompt
     print("Stage 2: Converting idea to image prompt...")
     try:
+        render_input = RENDER_PROMPT.format(idea=idea, story=story, timestamp=timestamp, style_snippets_section=style_snippets_section)
+        if character_render_section:
+            render_input = render_input + "\n" + character_render_section
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=RENDER_PROMPT.format(idea=idea, story=story, timestamp=timestamp, style_snippets_section=style_snippets_section),
+            contents=render_input,
         )
         result = parse_ai_response_generic(response.text, ["prompt"])
         if result:
@@ -403,6 +625,10 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
                 'avoid_list': avoid_list,
                 'news_inspiration': news,
                 'style_picks': {k: v['en'] for k, v in style_picks.items()},
+                'character': char_id,
+                'character_name': char_name,
+                'is_seasonal': is_seasonal,
+                'season': season,
             }
         else:
             print("Stage 2 parse failed, using idea as prompt fallback.")
@@ -415,6 +641,10 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
                 'avoid_list': avoid_list,
                 'news_inspiration': news,
                 'style_picks': {k: v['en'] for k, v in style_picks.items()},
+                'character': char_id,
+                'character_name': char_name,
+                'is_seasonal': is_seasonal,
+                'season': season,
             }
     except Exception as e:
         print(f"Stage 2 failed ({e}), using idea as prompt fallback.")
@@ -422,11 +652,15 @@ def generate_prompt_and_story(timestamp: str, creative_notes: dict) -> dict:
             'prompt': f"{idea}. The date and time '{timestamp}' is visually displayed in the image. {style_snippets}",
             'story': story,
             'idea': idea,
-                'title': title or '貓咪日常',
-                'inspiration': inspiration,
+            'title': title or '貓咪日常',
+            'inspiration': inspiration,
             'avoid_list': avoid_list,
             'news_inspiration': news,
             'style_picks': {k: v['en'] for k, v in style_picks.items()},
+            'character': char_id,
+            'character_name': char_name,
+            'is_seasonal': is_seasonal,
+            'season': season,
         }
 
 
@@ -581,8 +815,8 @@ def post_issue_comment(issue_number: str, image_url: str, number: int, timestamp
 
 def update_catlist_and_push(entry: dict) -> int:
     """Update catlist.json and monthly detail file, commit and push."""
-    index_fields = {"number", "timestamp", "url", "model", "status", "error", "title", "inspiration"}
-    detail_fields = {"number", "prompt", "story", "idea", "title", "inspiration", "news_inspiration", "avoid_list", "style_picks", "comment_id"}
+    index_fields = {"number", "timestamp", "url", "model", "status", "error", "title", "inspiration", "character", "character_name", "is_seasonal", "season"}
+    detail_fields = {"number", "prompt", "story", "idea", "title", "inspiration", "news_inspiration", "avoid_list", "style_picks", "comment_id", "character", "character_name", "is_seasonal", "season"}
 
     # Write lightweight index entry to catlist.json
     catlist_path = Path("catlist.json")
@@ -614,6 +848,11 @@ def update_catlist_and_push(entry: dict) -> int:
 
     if Path("creative_notes.json").exists():
         git_add_files.append("creative_notes.json")
+    # Include character file updates (appearance counts)
+    char_dir = Path("characters")
+    if char_dir.exists():
+        for f in char_dir.glob("*.json"):
+            git_add_files.append(str(f))
     subprocess.run(["git", "add"] + git_add_files, check=True)
 
     status = entry["status"]
@@ -664,8 +903,11 @@ def main():
     # Update creative notes if needed (every 5 cats)
     creative_notes = maybe_update_creative_notes(next_number)
 
+    # Select character (or None for original)
+    character = select_character(now)
+
     print(f"Generating cat #{next_number} for {timestamp}...")
-    prompt_data = generate_prompt_and_story(timestamp, creative_notes)
+    prompt_data = generate_prompt_and_story(timestamp, creative_notes, character)
     prompt = prompt_data['prompt']
     story = prompt_data['story']
     idea = prompt_data.get('idea', '')
@@ -674,6 +916,10 @@ def main():
     style_picks = prompt_data.get('style_picks', {})
     title = prompt_data.get('title', '貓咪日常')
     inspiration = prompt_data.get('inspiration', 'original')
+    char_id = prompt_data.get('character')
+    char_name = prompt_data.get('character_name')
+    is_seasonal = prompt_data.get('is_seasonal', False)
+    season = prompt_data.get('season')
     result = asyncio.run(generate_cat_image("/tmp", timestamp, prompt))
 
     if result["status"] == "failed":
@@ -728,11 +974,21 @@ def main():
     }
     if comment_id:
         entry["comment_id"] = comment_id
+    if char_id:
+        entry["character"] = char_id
+        entry["character_name"] = char_name
+    if is_seasonal and season:
+        entry["is_seasonal"] = True
+        entry["season"] = season
+
+    # Update character appearance stats
+    if char_id:
+        update_character_after_generation(char_id, next_number, timestamp)
 
     print("Updating catlist.json...")
     update_catlist_and_push(entry)
 
-    print(f"Done! Cat #{next_number}")
+    print(f"Done! Cat #{next_number}" + (f" (character: {char_name})" if char_name else ""))
 
 
 if __name__ == "__main__":

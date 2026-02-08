@@ -1360,5 +1360,14 @@
     "status": "success",
     "model": "gemini-3-pro-image-preview",
     "number": 192
+  },
+  {
+    "title": "霓虹航線尋",
+    "number": 193,
+    "url": "https://github.com/yazelin/catime/releases/download/cats/cat_2026-02-08_1421_UTC.webp",
+    "timestamp": "2026-02-08 14:21 UTC",
+    "model": "gemini-2.5-flash-image (fallback from gemini-3-pro-image-preview, reason: API 503: The model is overloaded. Please try again later.)",
+    "inspiration": "連接兩大洲的全球最長海底高速列車項目正在積極進展中。",
+    "status": "success"
   }
 ]

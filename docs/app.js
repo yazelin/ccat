@@ -19,6 +19,25 @@
   let currentLbIndex = -1;
   let triggerCard = null; // card element that opened lightbox
 
+  // ── Theme toggle ──
+  const themeToggle = document.getElementById("theme-toggle");
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+    localStorage.setItem("catime-theme", theme);
+  }
+  // Init: check localStorage, then system preference
+  const savedTheme = localStorage.getItem("catime-theme");
+  if (savedTheme) {
+    applyTheme(savedTheme);
+  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    applyTheme("dark");
+  }
+  themeToggle.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme");
+    applyTheme(current === "dark" ? "light" : "dark");
+  });
+
   const gallery = document.getElementById("gallery");
   const endMsg = document.getElementById("end-msg");
   const modelSelect = document.getElementById("model-filter");
@@ -46,6 +65,9 @@
   const lbAvoidList = document.getElementById("lb-avoid-list");
   const lbTabBar = document.getElementById("lb-tab-bar");
   const lbImgWrap = document.getElementById("lb-img-wrap");
+  const lbPrev = document.getElementById("lb-prev");
+  const lbNext = document.getElementById("lb-next");
+  const lbNavHint = document.getElementById("lb-nav-hint");
 
   // Date picker elements
   const datePickerBtn = document.getElementById("date-picker-btn");
@@ -428,11 +450,27 @@
     lightbox.classList.remove("hidden");
     document.body.style.overflow = "hidden";
 
-    // Focus trap: focus close button
+    // Update nav button state
+    updateNavButtons();
+
+    // Show hint, fade after 2s
+    lbNavHint.classList.remove("fade-out");
+    clearTimeout(lbNavHint._timer);
+    lbNavHint._timer = setTimeout(() => lbNavHint.classList.add("fade-out"), 2000);
+
+    // Focus close button (don't use focus to avoid outline)
     lbClose.focus();
 
     fetchDetail(cat).then(detail => populateLightboxDetail(cat, detail));
   }
+
+  function updateNavButtons() {
+    lbPrev.classList.toggle("disabled", currentLbIndex <= 0);
+    lbNext.classList.toggle("disabled", currentLbIndex >= filtered.length - 1);
+  }
+
+  lbPrev.addEventListener("click", (e) => { e.stopPropagation(); navigateLightbox(-1); });
+  lbNext.addEventListener("click", (e) => { e.stopPropagation(); navigateLightbox(1); });
 
   function closeLightbox() {
     lightbox.classList.add("hidden");
